@@ -15,8 +15,8 @@
   },
   "devDependencies": {
     "prisma": "6.1.0",
-    "typescript": "5.0.0",
-    "@types/node": "20.0.0",
+    "typescript": "^5.0.0",
+    "@types/node": "^20.0.0",
     "@types/react": "19.0.1",
     "@types/react-dom": "19.0.1",
     "postcss": "8.0.0",
