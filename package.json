@@ -1,3 +1,4 @@
+
 {
   "name": "kz4kids",
   "version": "0.1.0",
@@ -7,6 +8,11 @@
     "build": "next build",
     "vercel-build": "next build"
   },
+  "scripts": {
+  "dev": "next dev",
+  "build": "next build",
+  "postinstall": "prisma generate"
+  }
   "dependencies": {
     "@prisma/client": "6.1.0",
     "prisma": "6.1.0",
