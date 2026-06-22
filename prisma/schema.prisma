@@ -1,0 +1,58 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id           String         @id @default(uuid())
+  email        String         @unique
+  name         String
+  createdAt    DateTime       @default(now())
+  progress     WordProgress[]
+  testResults  TestResult[]
+}
+
+model Category {
+  id    String @id @default(uuid())
+  slug  String @unique
+  nameRu String
+  nameKz String
+  cards WordsCard[]
+}
+
+model WordsCard {
+  id         String         @id @default(uuid())
+  wordRu     String
+  wordKz     String
+  imageUrl   String?
+  audioRuUrl String?
+  audioKzUrl String?
+  categoryId String
+  category   Category       @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  progress   WordProgress[]
+}
+
+model WordProgress {
+  id        String    @id @default(uuid())
+  userId    String
+  cardId    String
+  isLearned Boolean   @default(false)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  card      WordsCard @relation(fields: [cardId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, cardId])
+}
+
+model TestResult {
+  id         String   @id @default(uuid())
+  userId     String
+  category   String
+  score      Int
+  total      Int
+  createdAt  DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}

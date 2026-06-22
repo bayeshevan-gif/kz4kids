@@ -1,0 +1,21 @@
+{
+  "name": "Бала Тілі - Казахский для детей",
+  "short_name": "БалаТілі",
+  "description": "Увлекательное изучение казахского языка",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#f59e0b",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/3884/3884851.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/3884/3884851.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
