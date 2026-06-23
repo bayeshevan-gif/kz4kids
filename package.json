@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "prisma generate && next build",
+    "build": "prisma generate && prisma db push --accept-data-loss && next build",
     "start": "next start",
     "lint": "eslint",
     "postinstall": "prisma generate"
@@ -15,7 +15,6 @@
     "bcryptjs": "^3.0.3",
     "jose": "^6.2.3",
     "next": "16.2.9",
-    "prisma": "^6.10.1",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "swr": "^2.4.2"
@@ -29,6 +28,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.2.9",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "prisma": "^6.10.1"
   }
 }
