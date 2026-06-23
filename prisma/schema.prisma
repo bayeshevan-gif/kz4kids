@@ -1,0 +1,82 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("POSTGRES_PRISMA_URL")
+  directUrl = env("POSTGRES_URL_NON_POOLING")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  passwordHash String
+  role         Role     @default(CHILD)
+  createdAt    DateTime @default(now())
+
+  progress UserProgress[]
+
+  @@map("users")
+}
+
+enum Role {
+  ADMIN
+  CHILD
+}
+
+model Section {
+  id        String   @id @default(cuid())
+  name      String
+  nameKz    String
+  emoji     String   @default("📁")
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+
+  cards Card[]
+
+  @@map("sections")
+}
+
+model Card {
+  id        String   @id @default(cuid())
+  sectionId String
+  ru        String
+  kz        String
+  emoji     String   @default("🃏")
+  imageUrl  String?
+  gifUrl    String?
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+
+  section  Section        @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  progress UserProgress[]
+
+  @@index([sectionId])
+  @@map("cards")
+}
+
+model UserProgress {
+  id        String   @id @default(cuid())
+  userId    String
+  cardId    String
+  learnedAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  card Card @relation(fields: [cardId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, cardId])
+  @@map("user_progress")
+}
+
+model TestResult {
+  id            String   @id @default(cuid())
+  userId        String
+  sectionId     String
+  correctCount  Int
+  totalCount    Int
+  completedAt   DateTime @default(now())
+
+  @@index([userId])
+  @@map("test_results")
+}
