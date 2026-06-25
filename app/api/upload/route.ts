@@ -27,14 +27,14 @@ export async function POST(req: NextRequest) {
 
   if (!ALLOWED_TYPES.includes(file.type)) {
     return NextResponse.json(
-      { error: "Допустимы только PNG, JPEG, WEBP или GIF" },
+      { error: "Допустимы PNG/JPEG/WEBP/GIF и аудио (mp3, wav, ogg, m4a)" },
       { status: 400 }
     );
   }
 
   if (file.size > MAX_FILE_SIZE) {
     return NextResponse.json(
-      { error: "Файл слишком большой (максимум 5 МБ)" },
+      { error: `Файл слишком большой (максимум ${Math.round(MAX_FILE_SIZE / 1024 / 1024)} МБ)` },
       { status: 400 }
     );
   }

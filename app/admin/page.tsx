@@ -127,7 +127,9 @@ export default function AdminPage() {
       kz: cardForm.kz.trim(),
       emoji: cardForm.emoji || "🃏", 
       imageUrl: cardForm.imageUrl ?? null, 
-      gifUrl: cardForm.gifUrl ?? null 
+      gifUrl: cardForm.gifUrl ?? null,
+      audioRuUrl: cardForm.audioRuUrl ?? null,
+      audioKzUrl: cardForm.audioKzUrl ?? null,
     };
     if (cardForm.id) {
       await fetch(`/api/cards/${cardForm.id}`, { 
@@ -385,6 +387,58 @@ export default function AdminPage() {
                         <span className="text-[10px] text-gray-400 truncate max-w-[180px]">{cardForm.imageUrl}</span>
                       </div>
                     )}
+                  </div>
+
+                  {/* Аудио: русский / казахский */}
+                  <div>
+                    <label className="text-xs text-[var(--ink-soft)] font-extrabold mb-1.5 block">Произношение (аудио)</label>
+                    <div className="flex flex-col gap-2">
+                      <div>
+                        <div className="text-[11px] text-[var(--ink-soft)] font-bold mb-1">Русский (опционально)</div>
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="file"
+                            accept="audio/*"
+                            disabled={uploading}
+                            onChange={async e => {
+                              const f = e.target.files?.[0]; if(!f) return;
+                              const url = await handleUpload(f);
+                              if (url) setCardForm({...cardForm, audioRuUrl: url});
+                            }}
+                            className="text-xs text-[var(--ink-soft)] file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-black file:bg-gray-100 file:text-[var(--ink-soft)] cursor-pointer"
+                          />
+                          {cardForm.audioRuUrl && (
+                            <>
+                              <audio src={cardForm.audioRuUrl} controls className="h-8" />
+                              <button onClick={() => setCardForm({...cardForm, audioRuUrl: undefined})} className="text-xs bg-[var(--bad-soft)] text-[var(--bad)] font-black px-2.5 py-1.5 rounded-xl cursor-pointer">Удалить</button>
+                            </>
+                          )}
+                        </div>
+                      </div>
+
+                      <div>
+                        <div className="text-[11px] text-[var(--ink-soft)] font-bold mb-1">Казахский (опционально)</div>
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="file"
+                            accept="audio/*"
+                            disabled={uploading}
+                            onChange={async e => {
+                              const f = e.target.files?.[0]; if(!f) return;
+                              const url = await handleUpload(f);
+                              if (url) setCardForm({...cardForm, audioKzUrl: url});
+                            }}
+                            className="text-xs text-[var(--ink-soft)] file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-black file:bg-gray-100 file:text-[var(--ink-soft)] cursor-pointer"
+                          />
+                          {cardForm.audioKzUrl && (
+                            <>
+                              <audio src={cardForm.audioKzUrl} controls className="h-8" />
+                              <button onClick={() => setCardForm({...cardForm, audioKzUrl: undefined})} className="text-xs bg-[var(--bad-soft)] text-[var(--bad)] font-black px-2.5 py-1.5 rounded-xl cursor-pointer">Удалить</button>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    </div>
                   </div>
 
                   {/* Выбор эмодзи */}
