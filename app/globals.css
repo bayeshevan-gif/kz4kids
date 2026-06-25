@@ -1,18 +1,21 @@
 @import "tailwindcss";
 
 :root {
-  --bg: #FFF8EC;
+  --bg: #FFFDF6;
   --card: #FFFFFF;
   --ink: #2B2118;
   --ink-soft: #6B5D4F;
-  --accent: #E8854A;
-  --accent-dark: #B85C26;
-  --accent-soft: #FCE3CD;
+  --accent: #FF9A4A; /* warmer, brighter */
+  --accent-2: #FFD36E; /* secondary playful */
+  --accent-dark: #E06A1A;
+  --accent-soft: #FFF0E0;
   --good: #4F9D6E;
   --good-soft: #DCF0E2;
   --bad: #D85B5B;
   --bad-soft: #FBE0E0;
-  --line: #ECE0CF;
+  --line: #F3E8DB;
+  --sticker-border: #FFE8C9;
+  --glass-accent: rgba(255,154,74,0.12);
   
   /* Glassmorphism helpers */
   --glass-bg: rgba(255, 248, 236, 0.85);
@@ -70,6 +73,71 @@ body {
   transform: translateY(-3px);
   box-shadow: 0 10px 24px rgba(60, 40, 20, 0.1);
   border-color: var(--accent);
+}
+
+/* Kid-friendly sticker/card styles */
+.kid-section-card {
+  border-radius: 20px;
+  padding: 18px 14px;
+  background: linear-gradient(180deg, var(--card), #fff9f2);
+  border: 2px solid var(--line);
+  text-align: center;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+.kid-section-card:hover {
+  transform: translateY(-6px) rotate(-1deg);
+  box-shadow: 0 18px 30px rgba(240,150,60,0.12);
+}
+.playful-emoji { font-size: 46px; display:block; margin-bottom:6px; }
+.sticker-badge {
+  display:inline-block;
+  padding:6px 9px;
+  border-radius:12px;
+  background: linear-gradient(180deg, var(--accent-2), var(--accent));
+  color: white;
+  font-weight: 800;
+  box-shadow: 0 6px 12px rgba(224,106,26,0.14);
+  border: 2px solid var(--sticker-border);
+  font-size: 12px;
+}
+
+/* Header tweaks for playful look */
+.glass-header {
+  position: sticky;
+  top: 0;
+  background: linear-gradient(90deg, rgba(255,211,140,0.08), rgba(255,255,255,0.9));
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--glass-border);
+  z-index: 100;
+}
+
+/* Tabbar bigger touch targets */
+.glass-tabbar {
+  background: linear-gradient(180deg, rgba(255,255,255,0.9), rgba(255,250,240,0.95));
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-top: 1px solid var(--glass-border);
+}
+.tab-pill {
+  border-radius: 14px;
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.tab-active {
+  background: linear-gradient(180deg, rgba(255,154,74,0.12), rgba(255,211,140,0.08));
+  box-shadow: 0 8px 18px rgba(255,154,74,0.08);
+  color: var(--accent-dark) !important;
+}
+
+/* Larger friendly buttons */
+.big-cta {
+  border-radius: 16px;
+  padding: 10px 14px;
+  font-weight: 800;
 }
 
 .card-shadow:active {

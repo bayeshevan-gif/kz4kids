@@ -18,19 +18,20 @@ export default function TabBar() {
   }
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 mx-auto max-w-[480px] flex px-2 pb-[max(8px,env(safe-area-inset-bottom))] pt-2 z-50 glass-tabbar rounded-t-[20px] shadow-[0_-4px_16px_rgba(60,40,20,0.04)]">
-      {tabs.map((t) => (
-        <button
-          key={t.key}
-          onClick={() => router.push(t.href)}
-          className={`flex-1 flex flex-col items-center gap-0.5 py-1.5 text-[11px] font-extrabold cursor-pointer active:scale-90 transition-transform ${
-            isActive(t.href) ? "text-[var(--accent-dark)]" : "text-[var(--ink-soft)]"
-          }`}
-        >
-          <span className="text-[22px]">{t.icon}</span>
-          {t.label}
-        </button>
-      ))}
+    <nav className="fixed bottom-0 left-0 right-0 mx-auto max-w-[480px] flex px-3 pb-[max(10px,env(safe-area-inset-bottom))] pt-3 z-50 glass-tabbar rounded-t-[20px] shadow-[0_-8px_24px_rgba(255,154,74,0.06)]">
+      {tabs.map((t) => {
+        const active = isActive(t.href);
+        return (
+          <button
+            key={t.key}
+            onClick={() => router.push(t.href)}
+            className={`flex-1 tab-pill cursor-pointer active:scale-95 transition-transform text-[12px] ${active ? 'tab-active' : ''}`}
+          >
+            <span className="text-[24px]">{t.icon}</span>
+            <div className="text-[12px] font-extrabold">{t.label}</div>
+          </button>
+        );
+      })}
     </nav>
   );
 }

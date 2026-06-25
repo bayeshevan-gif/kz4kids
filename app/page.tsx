@@ -56,20 +56,20 @@ export default function HomePage() {
         ) : (
           <div className="grid grid-cols-2 gap-[14px]">
             {sections.map((s: SectionDTO) => (
-              <button
-                key={s.id}
-                onClick={() => router.push(`/learn/${s.id}`)}
-                className="relative rounded-[22px] bg-[var(--card)] card-shadow p-[18px_14px] text-center active:scale-95 transition-transform"
-              >
-                {s.totalCards > 0 && (
-                  <span className="absolute top-[10px] right-[10px] rounded-[10px] bg-[var(--good-soft)] px-[7px] py-[3px] text-[10px] font-extrabold text-[var(--good)]">
-                    {s.learnedCards}/{s.totalCards}
-                  </span>
-                )}
-                <span className="block text-[40px] mb-1.5">{s.emoji}</span>
-                <div className="font-extrabold text-[16px]">{s.name}</div>
-                <div className="text-[12px] text-[var(--ink-soft)] font-semibold">{s.nameKz}</div>
-              </button>
+            <button
+              key={s.id}
+              onClick={() => router.push(`/learn/${s.id}`)}
+              className="relative kid-section-card card-shadow active:scale-95 transition-transform"
+            >
+              {s.totalCards > 0 && (
+                <span className="absolute top-3 right-3 sticker-badge">
+                  {s.learnedCards}/{s.totalCards}
+                </span>
+              )}
+              <span className="playful-emoji">{s.emoji}</span>
+              <div className="font-extrabold text-[16px]">{s.name}</div>
+              <div className="text-[13px] text-[var(--ink-soft)] font-semibold">{s.nameKz}</div>
+            </button>
             ))}
           </div>
         )}
