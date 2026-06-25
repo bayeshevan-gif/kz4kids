@@ -18,9 +18,18 @@ export default function LearningPath({ totalLessons, currentLesson, completed }:
           const isCurrent = i === currentLesson;
           return (
             <div key={i} className="flex items-center gap-2">
-              <div className={`w-12 h-12 rounded-full flex items-center justify-center font-extrabold ${isDone ? 'bg-[var(--good)] text-white shadow-[0_8px_18px_rgba(79,157,110,0.12)]' : isCurrent ? 'bg-[var(--accent)] text-white' : 'bg-white border-2 border-[var(--line)] text-[var(--ink)]`}`}>
-                {isDone ? '✓' : i + 1}
-              </div>
+              {(() => {
+                const statusClass = isDone
+                  ? 'bg-[var(--good)] text-white shadow-[0_8px_18px_rgba(79,157,110,0.12)]'
+                  : isCurrent
+                  ? 'bg-[var(--accent)] text-white'
+                  : 'bg-white border-2 border-[var(--line)] text-[var(--ink)]';
+                return (
+                  <div className={`w-12 h-12 rounded-full flex items-center justify-center font-extrabold ${statusClass}`}>
+                    {isDone ? '✓' : i + 1}
+                  </div>
+                );
+              })()}
               {i < totalLessons - 1 && (
                 <div className={`h-1 w-8 ${completed[i] && completed[i+1] ? 'bg-[var(--good)]' : 'bg-[var(--line)]'}`} />
               )}
