@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import useSWR from "swr";
 import AppHeader from "@/components/AppHeader";
@@ -13,6 +14,8 @@ export default function LearnSectionPage() {
   const { sectionId } = useParams<{ sectionId: string }>();
   const router = useRouter();
 
+  const [currentIndex, setCurrentIndex] = useState(0);
+
   const { data: sectionsData } = useSWR<{ sections: SectionDTO[] }>("/api/sections", fetcher);
   const { data: cardsData, mutate } = useSWR<{ cards: CardDTO[] }>(
     `/api/cards?sectionId=${sectionId}`,
@@ -21,6 +24,13 @@ export default function LearnSectionPage() {
 
   const section = sectionsData?.sections.find((s) => s.id === sectionId);
   const cards = cardsData?.cards ?? [];
+
+  // Automatically speak the Kazakh word when loading a card
+  useEffect(() => {
+    if (cards.length > 0 && cards[currentIndex]) {
+      speak(cards[currentIndex].kz, "kz");
+    }
+  }, [currentIndex, cards]);
 
   async function toggleLearned(cardId: string) {
     await fetch("/api/progress/toggle", {
@@ -38,7 +48,7 @@ export default function LearnSectionPage() {
         <div className="flex items-center gap-2.5 mb-3.5">
           <button
             onClick={() => router.push("/")}
-            className="h-[38px] w-[38px] rounded-[12px] bg-[var(--card)] card-shadow text-[var(--accent-dark)] flex items-center justify-center"
+            className="h-[38px] w-[38px] rounded-[12px] bg-[var(--card)] card-shadow text-[var(--accent-dark)] flex items-center justify-center active:scale-90 transition-transform"
           >
             ←
           </button>
@@ -55,41 +65,123 @@ export default function LearnSectionPage() {
             <span className="text-[50px] block mb-2">🗂️</span>
             В этом разделе пока нет карточек
           </div>
+        ) : currentIndex >= cards.length ? (
+          /* Экран успешного завершения */
+          <div className="bg-[var(--card)] card-shadow rounded-[28px] p-6 text-center mt-4">
+            <span className="text-[80px] block mb-4 animate-bounce">🎉</span>
+            <h2 className="text-[24px] font-extrabold text-[var(--accent-dark)] mb-2">Отличная работа!</h2>
+            <p className="text-[var(--ink-soft)] text-[15px] mb-6">
+              Ты изучил все карточки в разделе «{section?.name}»!
+            </p>
+            <div className="flex flex-col gap-3">
+              <button
+                onClick={() => router.push(`/test/${sectionId}`)}
+                className="w-full rounded-[16px] bg-[var(--good)] text-white font-extrabold py-3.5 text-[16px] card-shadow active:scale-95 transition-transform cursor-pointer"
+              >
+                📝 Пройти тест
+              </button>
+              <button
+                onClick={() => setCurrentIndex(0)}
+                className="w-full rounded-[16px] bg-[var(--accent-soft)] text-[var(--accent-dark)] font-extrabold py-3.5 text-[16px] active:scale-95 transition-transform cursor-pointer"
+              >
+                🔁 Повторить сначала
+              </button>
+              <button
+                onClick={() => router.push("/")}
+                className="w-full rounded-[16px] border-2 border-[var(--line)] bg-white text-[var(--ink-soft)] font-bold py-3.5 text-[15px] active:scale-95 transition-transform cursor-pointer"
+              >
+                🏠 На главную
+              </button>
+            </div>
+          </div>
         ) : (
-          <div className="flex flex-col gap-3">
-            {cards.map((c: CardDTO) => (
-              <div key={c.id} className="bg-[var(--card)] card-shadow rounded-[22px] p-3.5 flex gap-3.5 items-center">
-                <div className="h-16 w-16 rounded-[16px] bg-[var(--accent-soft)] flex items-center justify-center text-[30px] overflow-hidden flex-shrink-0">
-                  {c.imageUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={c.imageUrl} alt={c.ru} className="h-full w-full object-cover" />
-                  ) : (
-                    c.emoji
-                  )}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="font-extrabold text-[17px]">
-                    {c.ru}{" "}
-                    <button onClick={() => speak(c.ru, "ru")} className="ml-1 rounded-[10px] bg-[var(--accent-soft)] px-2 py-1 text-xs">
-                      🔊
-                    </button>
-                  </div>
-                  <div className="text-[var(--accent-dark)] font-bold text-[15px]">
-                    {c.kz}{" "}
-                    <button onClick={() => speak(c.kz, "kz")} className="ml-1 rounded-[10px] bg-[var(--accent-soft)] px-2 py-1 text-xs">
-                      🔊
-                    </button>
-                  </div>
-                </div>
-                <button
-                  onClick={() => toggleLearned(c.id)}
-                  className="h-[38px] w-[38px] rounded-[12px] flex items-center justify-center flex-shrink-0"
-                  style={{ background: c.learned ? "var(--good-soft)" : "var(--accent-soft)" }}
-                >
-                  {c.learned ? "✅" : "⭐"}
-                </button>
+          /* Слайд-шоу карточек */
+          <div className="flex flex-col gap-5 mt-2">
+            {/* Прогресс-бар и счетчик */}
+            <div className="flex items-center justify-between px-1">
+              <span className="text-[13px] font-extrabold text-[var(--ink-soft)]">
+                Карточка {currentIndex + 1} из {cards.length}
+              </span>
+              <div className="w-[120px] h-2 rounded-full bg-[var(--line)] overflow-hidden">
+                <div
+                  className="h-full bg-[var(--accent)] rounded-full transition-all duration-300"
+                  style={{ width: `${((currentIndex + 1) / cards.length) * 100}%` }}
+                />
               </div>
-            ))}
+            </div>
+
+            {/* Карточка */}
+            {(() => {
+              const c = cards[currentIndex];
+              return (
+                <div className="bg-[var(--card)] card-shadow rounded-[32px] p-6 flex flex-col items-center border border-[var(--line)] relative overflow-hidden min-h-[340px] justify-between">
+                  {/* Кнопка "Выучено" (звездочка / галочка) */}
+                  <button
+                    onClick={() => toggleLearned(c.id)}
+                    className="absolute top-4 right-4 h-[44px] w-[44px] rounded-[14px] flex items-center justify-center card-shadow transition-transform active:scale-90 cursor-pointer"
+                    style={{ background: c.learned ? "var(--good-soft)" : "var(--accent-soft)" }}
+                  >
+                    {c.learned ? (
+                      <span className="text-[20px]">✅</span>
+                    ) : (
+                      <span className="text-[20px]">⭐</span>
+                    )}
+                  </button>
+
+                  {/* Изображение / Эмодзи */}
+                  <div className="h-[160px] w-[160px] rounded-[24px] bg-[var(--accent-soft)] flex items-center justify-center text-[70px] overflow-hidden mt-6 flex-shrink-0 card-shadow">
+                    {c.imageUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={c.imageUrl} alt={c.ru} className="h-full w-full object-cover" />
+                    ) : (
+                      c.emoji
+                    )}
+                  </div>
+
+                  {/* Текст и озвучка */}
+                  <div className="w-full text-center mt-6 mb-4">
+                    {/* Русский вариант */}
+                    <div className="flex items-center justify-center gap-2 mb-2">
+                      <span className="text-[24px] font-extrabold text-[var(--ink)]">{c.ru}</span>
+                      <button
+                        onClick={() => speak(c.ru, "ru")}
+                        className="h-[36px] w-[36px] rounded-[10px] bg-[var(--accent-soft)] text-[16px] flex items-center justify-center active:scale-90 transition-transform cursor-pointer"
+                      >
+                        🔊
+                      </button>
+                    </div>
+
+                    {/* Казахский вариант */}
+                    <div className="flex items-center justify-center gap-2">
+                      <span className="text-[22px] font-bold text-[var(--accent-dark)]">{c.kz}</span>
+                      <button
+                        onClick={() => speak(c.kz, "kz")}
+                        className="h-[36px] w-[36px] rounded-[10px] bg-[var(--accent-soft)] text-[16px] flex items-center justify-center active:scale-90 transition-transform cursor-pointer"
+                      >
+                        🔊
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
+
+            {/* Кнопки навигации */}
+            <div className="flex gap-4 mt-2">
+              <button
+                disabled={currentIndex === 0}
+                onClick={() => setCurrentIndex((i) => i - 1)}
+                className="flex-1 rounded-[18px] border-2 border-[var(--line)] bg-white text-[var(--ink)] font-extrabold py-3.5 text-[15px] active:scale-95 transition-transform disabled:opacity-40 disabled:pointer-events-none cursor-pointer"
+              >
+                ← Назад
+              </button>
+              <button
+                onClick={() => setCurrentIndex((i) => i + 1)}
+                className="flex-1 rounded-[18px] bg-[var(--accent)] text-white font-extrabold py-3.5 text-[15px] card-shadow active:scale-95 transition-transform cursor-pointer"
+              >
+                {currentIndex === cards.length - 1 ? "Готово 🎉" : "Дальше →"}
+              </button>
+            </div>
           </div>
         )}
       </main>
