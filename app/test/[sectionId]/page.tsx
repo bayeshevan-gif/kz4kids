@@ -15,6 +15,20 @@ export default function TestRunPage() {
   const [correctCount, setCorrectCount] = useState(0);
   const [answered, setAnswered] = useState<string | null>(null);
   const [error, setError] = useState("");
+  const [submitted, setSubmitted] = useState(false);
+
+  const finished = questions ? qIndex >= questions.length : false;
+
+  useEffect(() => {
+    if (finished && !submitted && questions) {
+      setSubmitted(true);
+      fetch("/api/tests/submit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sectionId, correctCount, totalCount: questions.length }),
+      });
+    }
+  }, [finished, submitted, sectionId, correctCount, questions]);
 
   useEffect(() => {
     fetch(`/api/tests/generate?sectionId=${sectionId}`)
@@ -51,23 +65,12 @@ export default function TestRunPage() {
     );
   }
 
-  const finished = qIndex >= questions.length;
-
-  if (finished) {
+  if (finished && questions) {
     const total = questions.length;
     const pct = Math.round((correctCount / total) * 100);
     let emoji = "🌟", msg = "Отлично! Ты молодец!";
     if (pct < 50) { emoji = "💪"; msg = "Попробуй ещё раз, у тебя получится!"; }
     else if (pct < 80) { emoji = "👍"; msg = "Хорошо! Ещё немного практики!"; }
-
-    useEffect(() => {
-      fetch("/api/tests/submit", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ sectionId, correctCount, totalCount: total }),
-      });
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
 
     return (
       <>

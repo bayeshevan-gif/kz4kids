@@ -105,7 +105,12 @@ export default function AdminPage() {
             {cards.map((c: CardDTO) => (
               <div key={c.id} className="flex items-center gap-2 p-2.5 rounded-xl bg-white border border-[var(--line)]">
                 <div className="w-10 h-10 rounded-lg bg-[var(--accent-soft)] flex items-center justify-center text-lg overflow-hidden">
-                  {c.imageUrl ? <img src={c.imageUrl} className="w-full h-full object-cover" /> : c.emoji}
+                  {c.imageUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={c.imageUrl} alt={c.ru} className="w-full h-full object-cover" />
+                  ) : (
+                    c.emoji
+                  )}
                 </div>
                 <div className="flex-1 text-sm"><b>{c.ru}</b> — {c.kz}</div>
                 <button onClick={()=>setCardForm({...c, editing:true})} className="text-xs bg-blue-100 rounded-lg px-2 py-1">✏️</button>

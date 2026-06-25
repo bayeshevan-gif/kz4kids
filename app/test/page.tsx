@@ -8,6 +8,18 @@ import type { SectionDTO } from "@/lib/types";
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
+function getWordPlural(count: number) {
+  const remainder10 = count % 10;
+  const remainder100 = count % 100;
+  if (remainder10 === 1 && remainder100 !== 11) {
+    return "слово";
+  }
+  if (remainder10 >= 2 && remainder10 <= 4 && (remainder100 < 12 || remainder100 > 14)) {
+    return "слова";
+  }
+  return "слов";
+}
+
 export default function TestsHomePage() {
   const router = useRouter();
   const { data } = useSWR<{ sections: SectionDTO[] }>("/api/sections", fetcher);
@@ -32,7 +44,7 @@ export default function TestsHomePage() {
               <span className="block text-[40px] mb-1.5">{s.emoji}</span>
               <div className="font-extrabold text-[16px]">{s.name}</div>
               <div className="text-[12px] text-[var(--ink-soft)] font-semibold">
-                {s.totalCards} {s.totalCards === 1 ? "слово" : "слов"}
+                {s.totalCards} {getWordPlural(s.totalCards)}
               </div>
             </button>
           ))}
