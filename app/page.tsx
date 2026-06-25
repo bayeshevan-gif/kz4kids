@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import useSWR from "swr";
 import AppHeader from "@/components/AppHeader";
 import TabBar from "@/components/TabBar";
+import LearningPath from "@/components/LearningPath";
 import { useUser } from "@/lib/user-context";
 import type { SectionDTO } from "@/lib/types";
 
@@ -55,22 +56,31 @@ export default function HomePage() {
           </div>
         ) : (
           <div className="grid grid-cols-2 gap-[14px]">
-            {sections.map((s: SectionDTO) => (
-            <button
-              key={s.id}
-              onClick={() => router.push(`/learn/${s.id}`)}
-              className="relative kid-section-card card-shadow active:scale-95 transition-transform"
-            >
-              {s.totalCards > 0 && (
-                <span className="absolute top-3 right-3 sticker-badge">
-                  {s.learnedCards}/{s.totalCards}
-                </span>
-              )}
-              <span className="playful-emoji">{s.emoji}</span>
-              <div className="font-extrabold text-[16px]">{s.name}</div>
-              <div className="text-[13px] text-[var(--ink-soft)] font-semibold">{s.nameKz}</div>
-            </button>
-            ))}
+            {sections.map((s: SectionDTO) => {
+              const perLesson = s.cardsPerLesson ?? 6;
+              const totalLessons = Math.max(1, Math.ceil(s.totalCards / perLesson));
+              const completedLessons = Math.floor((s.learnedCards || 0) / perLesson);
+              const completedArr = Array.from({ length: totalLessons }, (_, i) => i < completedLessons);
+              return (
+                <button
+                  key={s.id}
+                  onClick={() => router.push(`/learn/${s.id}`)}
+                  className="relative kid-section-card card-shadow active:scale-95 transition-transform"
+                >
+                  {s.totalCards > 0 && (
+                    <span className="absolute top-3 right-3 sticker-badge">
+                      {s.learnedCards}/{s.totalCards}
+                    </span>
+                  )}
+                  <span className="playful-emoji">{s.emoji}</span>
+                  <div className="font-extrabold text-[16px]">{s.name}</div>
+                  <div className="text-[13px] text-[var(--ink-soft)] font-semibold">{s.nameKz}</div>
+                  <div className="mt-3">
+                    <LearningPath totalLessons={totalLessons} currentLesson={Math.min(completedLessons, totalLessons-1)} completed={completedArr} />
+                  </div>
+                </button>
+              );
+            })}
           </div>
         )}
       </main>
