@@ -19,5 +19,21 @@ export async function POST(req: NextRequest) {
     data: { userId: session!.userId, sectionId, correctCount, totalCount },
   });
 
+  // If client provided list of correctly answered cardIds, mark them as learned
+  const correctCardIds = Array.isArray(body?.correctCardIds)
+    ? body?.correctCardIds.filter((id: any) => typeof id === 'string')
+    : [];
+
+  if (correctCardIds.length > 0) {
+    const tasks = correctCardIds.map((cardId: string) =>
+      prisma.userProgress.upsert({
+        where: { userId_cardId: { userId: session!.userId, cardId } },
+        update: {},
+        create: { userId: session!.userId, cardId },
+      })
+    );
+    await Promise.all(tasks);
+  }
+
   return NextResponse.json({ result });
 }

@@ -15,6 +15,7 @@ export default function LearnSectionPage() {
   const router = useRouter();
 
   const [currentIndex, setCurrentIndex] = useState(0);
+  const CARDS_PER_LESSON = 6;
 
   const { data: sectionsData } = useSWR<{ sections: SectionDTO[] }>("/api/sections", fetcher);
   const { data: cardsData, mutate } = useSWR<{ cards: CardDTO[] }>(
@@ -24,6 +25,11 @@ export default function LearnSectionPage() {
 
   const section = sectionsData?.sections.find((s) => s.id === sectionId);
   const cards = cardsData?.cards ?? [];
+  const lessons: CardDTO[][] = [];
+  for (let i = 0; i < cards.length; i += CARDS_PER_LESSON) {
+    lessons.push(cards.slice(i, i + CARDS_PER_LESSON));
+  }
+  const currentLessonIndex = Math.floor(currentIndex / CARDS_PER_LESSON);
 
   // Automatically speak the Kazakh word when loading a card
   useEffect(() => {
@@ -38,6 +44,18 @@ export default function LearnSectionPage() {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ cardId }),
+    });
+    mutate();
+  }
+
+  async function completeLessonIfNeeded(prevLessonIndex: number) {
+    if (prevLessonIndex < 0 || prevLessonIndex >= lessons.length) return;
+    const ids = lessons[prevLessonIndex].map((c) => c.id);
+    if (ids.length === 0) return;
+    await fetch("/api/progress/complete-lesson", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ cardIds: ids }),
     });
     mutate();
   }
@@ -169,21 +187,54 @@ export default function LearnSectionPage() {
               );
             })()}
 
-            {/* Кнопки навигации */}
-            <div className="flex gap-4 mt-2">
-              <button
-                disabled={currentIndex === 0}
-                onClick={() => setCurrentIndex((i) => i - 1)}
-                className="flex-1 rounded-[18px] border-2 border-[var(--line)] bg-white text-[var(--ink)] font-extrabold py-3.5 text-[15px] active:scale-95 transition-transform disabled:opacity-40 disabled:pointer-events-none cursor-pointer"
-              >
-                ← Назад
-              </button>
-              <button
-                onClick={() => setCurrentIndex((i) => i + 1)}
-                className="flex-1 rounded-[18px] bg-[var(--accent)] text-white font-extrabold py-3.5 text-[15px] card-shadow active:scale-95 transition-transform cursor-pointer"
-              >
-                {currentIndex === cards.length - 1 ? "Готово 🎉" : "Дальше →"}
-              </button>
+            {/* Навигация, уроки и тесты */}
+            <div className="flex flex-col gap-3">
+              <div className="flex items-center justify-between px-1">
+                <div className="text-sm font-extrabold text-[var(--ink-soft)]">Урок {Math.min(currentLessonIndex + 1, lessons.length)} из {lessons.length}</div>
+                <div className="text-sm text-[var(--ink-soft)]">Карточка {currentIndex + 1}</div>
+              </div>
+
+              <div className="flex gap-4 mt-2">
+                <button
+                  disabled={currentIndex === 0}
+                  onClick={() => setCurrentIndex((i) => i - 1)}
+                  className="flex-1 rounded-[18px] border-2 border-[var(--line)] bg-white text-[var(--ink)] font-extrabold py-3.5 text-[15px] active:scale-95 transition-transform disabled:opacity-40 disabled:pointer-events-none cursor-pointer"
+                >
+                  ← Назад
+                </button>
+                <button
+                  onClick={async () => {
+                    const prevLesson = Math.floor(currentIndex / CARDS_PER_LESSON);
+                    const newIndex = Math.min(currentIndex + 1, cards.length);
+                    const newLesson = Math.floor(newIndex / CARDS_PER_LESSON);
+                    // Если перешли на следующий урок — пометить предыдущий как завершённый
+                    if (newLesson > prevLesson) {
+                      await completeLessonIfNeeded(prevLesson);
+                    }
+                    setCurrentIndex(newIndex);
+                  }}
+                  className="flex-1 rounded-[18px] bg-[var(--accent)] text-white font-extrabold py-3.5 text-[15px] card-shadow active:scale-95 transition-transform cursor-pointer"
+                >
+                  {currentIndex >= cards.length - 1 ? "Готово 🎉" : "Дальше →"}
+                </button>
+              </div>
+
+              <div className="flex gap-3 mt-2">
+                <button
+                  onClick={() => router.push(`/test/${sectionId}?lessonIndex=${currentLessonIndex + 1}`)}
+                  className="flex-1 rounded-[16px] bg-[var(--accent-2)] text-[var(--accent-dark)] font-extrabold py-3 text-[15px] card-shadow active:scale-95 transition-transform"
+                >
+                  📝 Тест по этому уроку
+                </button>
+                {lessons.length >= 3 && (
+                  <button
+                    onClick={() => router.push(`/test/${sectionId}?cumulative=3`)}
+                    className="flex-1 rounded-[16px] bg-[var(--good)] text-white font-extrabold py-3 text-[15px] card-shadow active:scale-95 transition-transform"
+                  >
+                    🌈 Тест за 3 урока
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         )}

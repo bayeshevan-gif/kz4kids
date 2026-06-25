@@ -21,7 +21,22 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "sectionId обязателен" }, { status: 400 });
   }
 
-  const cards = await prisma.card.findMany({ where: { sectionId } });
+  const cards = await prisma.card.findMany({ where: { sectionId }, orderBy: { order: 'asc' } });
+
+  // Lesson parameters
+  const lessonIndex = req.nextUrl.searchParams.get("lessonIndex"); // 1-based
+  const cumulative = Number(req.nextUrl.searchParams.get("cumulative")) || 0; // number of lessons to include
+  const CARDS_PER_LESSON = 6;
+
+  let pool = cards;
+  if (lessonIndex) {
+    const li = Math.max(1, Number(lessonIndex));
+    const start = (li - 1) * CARDS_PER_LESSON;
+    pool = cards.slice(start, start + CARDS_PER_LESSON);
+  } else if (cumulative > 0) {
+    const upto = Math.max(1, cumulative) * CARDS_PER_LESSON;
+    pool = cards.slice(0, upto);
+  }
 
   if (cards.length < 2) {
     return NextResponse.json(
@@ -44,9 +59,11 @@ export async function GET(req: NextRequest) {
     learned: false,
   });
 
-  const shuffledCards = shuffle(cards);
-  const questions: TestQuestionDTO[] = shuffledCards.map((card) => {
-    const others = shuffle(cards.filter((c) => c.id !== card.id)).slice(0, 3);
+  const shuffledCards = shuffle(pool);
+  // Limit test size to 6 questions (as requested)
+  const selected = shuffledCards.slice(0, 6);
+  const questions: TestQuestionDTO[] = selected.map((card) => {
+    const others = shuffle(pool.filter((c) => c.id !== card.id)).slice(0, 3);
     const options = shuffle([card, ...others]).map(toDTO);
     return { card: toDTO(card), options };
   });

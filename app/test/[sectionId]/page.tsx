@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import AppHeader from "@/components/AppHeader";
 import { speak } from "@/lib/useSpeech";
 import type { TestQuestionDTO } from "@/lib/types";
@@ -9,10 +9,12 @@ import type { TestQuestionDTO } from "@/lib/types";
 export default function TestRunPage() {
   const { sectionId } = useParams<{ sectionId: string }>();
   const router = useRouter();
+  const search = useSearchParams();
 
   const [questions, setQuestions] = useState<TestQuestionDTO[] | null>(null);
   const [qIndex, setQIndex] = useState(0);
   const [correctCount, setCorrectCount] = useState(0);
+  const [correctCardIds, setCorrectCardIds] = useState<string[]>([]);
   const [answered, setAnswered] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [submitted, setSubmitted] = useState(false);
@@ -25,13 +27,21 @@ export default function TestRunPage() {
       fetch("/api/tests/submit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ sectionId, correctCount, totalCount: questions.length }),
+        body: JSON.stringify({ sectionId, correctCount, totalCount: questions.length, correctCardIds }),
       });
     }
-  }, [finished, submitted, sectionId, correctCount, questions]);
+  }, [finished, submitted, sectionId, correctCount, questions, correctCardIds]);
 
   useEffect(() => {
-    fetch(`/api/tests/generate?sectionId=${sectionId}`)
+    const search = useSearchParams();
+    const lessonIndex = search.get("lessonIndex");
+    const cumulative = search.get("cumulative");
+    const params = new URLSearchParams();
+    params.set("sectionId", sectionId || "");
+    if (lessonIndex) params.set("lessonIndex", lessonIndex);
+    if (cumulative) params.set("cumulative", cumulative);
+
+    fetch(`/api/tests/generate?${params.toString()}`)
       .then((r) => r.json())
       .then((data) => {
         if (data.error) {
@@ -40,7 +50,7 @@ export default function TestRunPage() {
           setQuestions(data.questions);
         }
       });
-  }, [sectionId]);
+  }, [sectionId, search]);
 
   if (error) {
     return (
@@ -101,6 +111,10 @@ export default function TestRunPage() {
     const opt = q.options.find((o) => o.id === optId);
     if (opt) speak(opt.kz, "kz", opt.audioKzUrl);
     if (optId === q.card.id) setCorrectCount((c) => c + 1);
+
+    if (optId === q.card.id) {
+      setCorrectCardIds((a) => [...a, q.card.id]);
+    }
 
     setTimeout(() => {
       setQIndex((i) => i + 1);
