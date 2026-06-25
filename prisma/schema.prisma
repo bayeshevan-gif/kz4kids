@@ -30,6 +30,7 @@ model Section {
   name      String
   nameKz    String
   emoji     String   @default("📁")
+  cardsPerLesson Int    @default(6)
   order     Int      @default(0)
   createdAt DateTime @default(now())
 

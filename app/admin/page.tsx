@@ -80,10 +80,11 @@ export default function AdminPage() {
 
   async function saveSection() {
     if (!sectionForm.name?.trim()) return;
-    const payload = { 
-      name: sectionForm.name.trim(), 
-      nameKz: sectionForm.nameKz?.trim() || "", 
-      emoji: sectionForm.emoji || "📁" 
+    const payload: any = {
+      name: sectionForm.name.trim(),
+      nameKz: sectionForm.nameKz?.trim() || "",
+      emoji: sectionForm.emoji || "📁",
+      cardsPerLesson: typeof sectionForm.cardsPerLesson === 'number' ? sectionForm.cardsPerLesson : 6,
     };
     if (sectionForm.id) {
       await fetch(`/api/sections/${sectionForm.id}`, { 
@@ -234,6 +235,18 @@ export default function AdminPage() {
               onChange={e => setSectionForm({...sectionForm, nameKz: e.target.value})} 
               className="w-full border-2 border-[var(--line)] rounded-lg p-2 mb-3 text-sm focus:border-[var(--accent)] outline-none" 
             />
+            <div className="flex gap-2 mb-3">
+              <div className="flex-1">
+                <label className="text-xs text-[var(--ink-soft)] font-extrabold mb-1.5 block">Карточек в уроке</label>
+                <input
+                  type="number"
+                  min={1}
+                  value={sectionForm.cardsPerLesson ?? 6}
+                  onChange={e => setSectionForm({...sectionForm, cardsPerLesson: Number(e.target.value)})}
+                  className="w-full border-2 border-[var(--line)] rounded-lg p-2 text-sm focus:border-[var(--accent)] outline-none"
+                />
+              </div>
+            </div>
             
             <label className="text-xs text-[var(--ink-soft)] font-extrabold mb-1.5 block">Иконка (Эмодзи)</label>
             <div className="flex flex-wrap gap-1 mb-4">

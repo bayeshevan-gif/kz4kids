@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import useSWR from "swr";
 import AppHeader from "@/components/AppHeader";
 import TabBar from "@/components/TabBar";
+import LearningPath from "@/components/LearningPath";
 import { speak } from "@/lib/useSpeech";
 import type { CardDTO, SectionDTO } from "@/lib/types";
 
@@ -30,6 +31,7 @@ export default function LearnSectionPage() {
     lessons.push(cards.slice(i, i + CARDS_PER_LESSON));
   }
   const currentLessonIndex = Math.floor(currentIndex / CARDS_PER_LESSON);
+  const lessonsCompleted = lessons.map((ls) => ls.every((c) => c.learned));
 
   // Automatically speak the Kazakh word when loading a card
   useEffect(() => {
@@ -76,6 +78,11 @@ export default function LearnSectionPage() {
               {section ? `${section.emoji} ${section.name}` : "Загрузка..."}
             </h1>
             <p className="text-[var(--ink-soft)] text-[13px]">{section?.nameKz}</p>
+            {lessons.length > 0 && (
+              <div className="mt-3">
+                <LearningPath totalLessons={lessons.length} currentLesson={Math.min(currentLessonIndex, lessons.length-1)} completed={lessonsCompleted} />
+              </div>
+            )}
           </div>
         </div>
 

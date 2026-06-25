@@ -5,6 +5,7 @@ export type SectionDTO = {
   emoji: string;
   order: number;
   totalCards: number;
+  cardsPerLesson?: number;
   learnedCards: number;
 };
 

@@ -29,6 +29,7 @@ export async function GET() {
     emoji: s.emoji,
     order: s.order,
     totalCards: s.cards.length,
+    cardsPerLesson: s.cardsPerLesson ?? 6,
     learnedCards: s.cards.filter((c) => c.progress.length > 0).length,
   }));
 
@@ -43,6 +44,7 @@ export async function POST(req: NextRequest) {
   const name = typeof body?.name === "string" ? body.name.trim() : "";
   const nameKz = typeof body?.nameKz === "string" ? body.nameKz.trim() : "";
   const emoji = typeof body?.emoji === "string" ? body.emoji : "📁";
+  const cardsPerLesson = Number.isFinite(Number(body?.cardsPerLesson)) ? Number(body?.cardsPerLesson) : undefined;
 
   if (!name) {
     return NextResponse.json({ error: "Название обязательно" }, { status: 400 });
@@ -55,6 +57,7 @@ export async function POST(req: NextRequest) {
       nameKz,
       emoji,
       order: (maxOrder._max.order ?? 0) + 1,
+      cardsPerLesson: cardsPerLesson ?? 6,
     },
   });
 

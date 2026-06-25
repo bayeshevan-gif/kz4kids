@@ -14,10 +14,11 @@ export async function PATCH(
   const name = typeof body?.name === "string" ? body.name.trim() : undefined;
   const nameKz = typeof body?.nameKz === "string" ? body.nameKz.trim() : undefined;
   const emoji = typeof body?.emoji === "string" ? body.emoji : undefined;
+  const cardsPerLesson = body?.cardsPerLesson === null ? null : typeof body?.cardsPerLesson === 'number' ? body.cardsPerLesson : undefined;
 
   const section = await prisma.section.update({
     where: { id },
-    data: { name, nameKz, emoji },
+    data: { name, nameKz, emoji, cardsPerLesson },
   });
 
   return NextResponse.json({ section });
