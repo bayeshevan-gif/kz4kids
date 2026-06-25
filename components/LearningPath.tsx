@@ -6,36 +6,41 @@ type Props = {
   totalLessons: number;
   currentLesson: number; // 0-based
   completed: boolean[]; // length totalLessons
+  variant?: "horizontal" | "vertical-with-tests";
 };
 
 export default function LearningPath({ totalLessons, currentLesson, completed }: Props) {
   const items = Array.from({ length: totalLessons }, (_, i) => i);
   return (
-    <div className="w-full overflow-x-auto py-3">
-      <div className="flex items-center gap-4 px-1">
-        {items.map((i) => {
-          const isDone = completed[i];
-          const isCurrent = i === currentLesson;
-          return (
-            <div key={i} className="flex items-center gap-2">
-              {(() => {
-                const statusClass = isDone
-                  ? 'bg-[var(--good)] text-white shadow-[0_8px_18px_rgba(79,157,110,0.12)]'
-                  : isCurrent
-                  ? 'bg-[var(--accent)] text-white'
-                  : 'bg-white border-2 border-[var(--line)] text-[var(--ink)]';
-                return (
-                  <div className={`w-12 h-12 rounded-full flex items-center justify-center font-extrabold ${statusClass}`}>
-                    {isDone ? '✓' : i + 1}
-                  </div>
-                );
-              })()}
-              {i < totalLessons - 1 && (
-                <div className={`h-1 w-8 ${completed[i] && completed[i+1] ? 'bg-[var(--good)]' : 'bg-[var(--line)]'}`} />
-              )}
-            </div>
-          );
-        })}
+    <div>
+      {/* horizontal default */}
+      <div className="w-full overflow-x-auto py-3">
+        <div className="flex items-center gap-4 px-1">
+          {items.map((i) => {
+            const isDone = completed[i];
+            const isCurrent = i === currentLesson;
+            const statusClass = isDone
+              ? 'bg-[var(--good)] text-white shadow-[0_8px_18px_rgba(79,157,110,0.12)]'
+              : isCurrent
+              ? 'bg-[var(--accent)] text-white'
+              : 'bg-white border-2 border-[var(--line)] text-[var(--ink)]';
+            return (
+              <div key={i} className="flex items-center gap-2">
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center font-extrabold ${statusClass}`}>
+                  {isDone ? '✓' : i + 1}
+                </div>
+                {i < totalLessons - 1 && (
+                  <div className={`h-1 w-8 ${completed[i] && completed[i+1] ? 'bg-[var(--good)]' : 'bg-[var(--line)]'}`} />
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* vertical-with-tests variant (for compact main-page card) */}
+      <div className="hidden vertical-learning-path">
+        {/* kept for possible scoped CSS override */}
       </div>
     </div>
   );

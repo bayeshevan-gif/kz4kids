@@ -76,7 +76,19 @@ export default function HomePage() {
                   <div className="font-extrabold text-[16px]">{s.name}</div>
                   <div className="text-[13px] text-[var(--ink-soft)] font-semibold">{s.nameKz}</div>
                   <div className="mt-3">
-                    <LearningPath totalLessons={totalLessons} currentLesson={Math.min(completedLessons, totalLessons-1)} completed={completedArr} />
+                    {/* Compact vertical path: lesson circle - test node - lesson circle ... */}
+                    <div className="flex flex-col items-center gap-2">
+                      {Array.from({ length: totalLessons }, (_, idx) => (
+                        <div key={idx} className="flex items-center gap-2">
+                          <div className={`w-8 h-8 rounded-full flex items-center justify-center font-extrabold ${completedArr[idx] ? 'bg-[var(--good)] text-white' : 'bg-white border-2 border-[var(--line)] text-[var(--ink)]'}`}>{idx+1}</div>
+                          {idx < totalLessons - 1 && (
+                            <div className="w-6 h-6 flex items-center justify-center">
+                              <div className="w-6 h-6 rounded-full bg-[var(--accent-2)] text-[12px] font-extrabold flex items-center justify-center">T</div>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </button>
               );
