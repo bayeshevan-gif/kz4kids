@@ -13,6 +13,10 @@
   --bad: #D85B5B;
   --bad-soft: #FBE0E0;
   --line: #ECE0CF;
+  
+  /* Glassmorphism helpers */
+  --glass-bg: rgba(255, 248, 236, 0.85);
+  --glass-border: rgba(236, 224, 207, 0.6);
 }
 
 * {
@@ -21,19 +25,73 @@
 
 body {
   font-family: var(--font-nunito), -apple-system, "Segoe UI", Roboto, sans-serif;
+  background-color: var(--bg);
 }
 
+/* Scrollbar styling for modern browsers */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--line);
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-soft);
+}
+
+/* Animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Card custom designs */
 .card-shadow {
-  box-shadow: 0 4px 14px rgba(60, 40, 20, 0.08);
-  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease;
+  box-shadow: 0 6px 16px rgba(60, 40, 20, 0.05);
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s ease, border-color 0.25s ease;
 }
 
 .card-shadow:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(60, 40, 20, 0.12);
+  transform: translateY(-3px);
+  box-shadow: 0 10px 24px rgba(60, 40, 20, 0.1);
+  border-color: var(--accent);
 }
 
 .card-shadow:active {
-  transform: translateY(1px) scale(0.98);
+  transform: translateY(1px) scale(0.97);
+  box-shadow: 0 4px 8px rgba(60, 40, 20, 0.06);
+}
+
+/* Translucent panels */
+.glass-header {
+  position: sticky;
+  top: 0;
+  background: var(--glass-bg);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--glass-border);
+  z-index: 100;
+}
+
+.glass-tabbar {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-top: 1px solid var(--glass-border);
 }
 

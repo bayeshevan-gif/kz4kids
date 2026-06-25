@@ -18,12 +18,12 @@ export default function TabBar() {
   }
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 mx-auto max-w-[480px] flex border-t border-[var(--line)] bg-[var(--card)] px-2 pb-[max(8px,env(safe-area-inset-bottom))] pt-2 z-50">
+    <nav className="fixed bottom-0 left-0 right-0 mx-auto max-w-[480px] flex px-2 pb-[max(8px,env(safe-area-inset-bottom))] pt-2 z-50 glass-tabbar rounded-t-[20px] shadow-[0_-4px_16px_rgba(60,40,20,0.04)]">
       {tabs.map((t) => (
         <button
           key={t.key}
           onClick={() => router.push(t.href)}
-          className={`flex-1 flex flex-col items-center gap-0.5 py-1.5 text-[11px] font-bold ${
+          className={`flex-1 flex flex-col items-center gap-0.5 py-1.5 text-[11px] font-extrabold cursor-pointer active:scale-90 transition-transform ${
             isActive(t.href) ? "text-[var(--accent-dark)]" : "text-[var(--ink-soft)]"
           }`}
         >
