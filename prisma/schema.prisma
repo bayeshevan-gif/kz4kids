@@ -46,6 +46,8 @@ model Card {
   emoji     String   @default("🃏")
   imageUrl  String?
   gifUrl    String?
+  audioRuUrl String?
+  audioKzUrl String?
   order     Int      @default(0)
   createdAt DateTime @default(now())
 

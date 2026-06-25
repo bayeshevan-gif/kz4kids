@@ -18,10 +18,14 @@ export async function PATCH(
     body?.imageUrl === null ? null : typeof body?.imageUrl === "string" ? body.imageUrl : undefined;
   const gifUrl =
     body?.gifUrl === null ? null : typeof body?.gifUrl === "string" ? body.gifUrl : undefined;
+  const audioRuUrl =
+    body?.audioRuUrl === null ? null : typeof body?.audioRuUrl === "string" ? body.audioRuUrl : undefined;
+  const audioKzUrl =
+    body?.audioKzUrl === null ? null : typeof body?.audioKzUrl === "string" ? body.audioKzUrl : undefined;
 
   const card = await prisma.card.update({
     where: { id },
-    data: { ru, kz, emoji, imageUrl, gifUrl },
+    data: { ru, kz, emoji, imageUrl, gifUrl, audioRuUrl, audioKzUrl },
   });
 
   return NextResponse.json({ card });

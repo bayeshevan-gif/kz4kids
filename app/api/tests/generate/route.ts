@@ -38,6 +38,8 @@ export async function GET(req: NextRequest) {
     emoji: c.emoji,
     imageUrl: c.imageUrl,
     gifUrl: c.gifUrl,
+    audioRuUrl: c.audioRuUrl,
+    audioKzUrl: c.audioKzUrl,
     order: c.order,
     learned: false,
   });

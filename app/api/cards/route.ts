@@ -31,6 +31,8 @@ export async function GET(req: NextRequest) {
     emoji: c.emoji,
     imageUrl: c.imageUrl,
     gifUrl: c.gifUrl,
+    audioRuUrl: c.audioRuUrl,
+    audioKzUrl: c.audioKzUrl,
     order: c.order,
     learned: c.progress.length > 0,
   }));
@@ -49,6 +51,8 @@ export async function POST(req: NextRequest) {
   const emoji = typeof body?.emoji === "string" ? body.emoji : "🃏";
   const imageUrl = typeof body?.imageUrl === "string" ? body.imageUrl : null;
   const gifUrl = typeof body?.gifUrl === "string" ? body.gifUrl : null;
+  const audioRuUrl = typeof body?.audioRuUrl === "string" ? body.audioRuUrl : null;
+  const audioKzUrl = typeof body?.audioKzUrl === "string" ? body.audioKzUrl : null;
 
   if (!sectionId || !ru || !kz) {
     return NextResponse.json(
@@ -70,6 +74,8 @@ export async function POST(req: NextRequest) {
       emoji,
       imageUrl,
       gifUrl,
+      audioRuUrl,
+      audioKzUrl,
       order: (maxOrder._max.order ?? 0) + 1,
     },
   });

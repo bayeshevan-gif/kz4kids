@@ -28,7 +28,8 @@ export default function LearnSectionPage() {
   // Automatically speak the Kazakh word when loading a card
   useEffect(() => {
     if (cards.length > 0 && cards[currentIndex]) {
-      speak(cards[currentIndex].kz, "kz");
+      const card = cards[currentIndex];
+      speak(card.kz, "kz", card.audioKzUrl);
     }
   }, [currentIndex, cards]);
 
@@ -144,10 +145,11 @@ export default function LearnSectionPage() {
                     <div className="flex items-center justify-center gap-2 mb-2">
                       <span className="text-[24px] font-extrabold text-[var(--ink)]">{c.ru}</span>
                       <button
-                        onClick={() => speak(c.ru, "ru")}
-                        className="h-[36px] w-[36px] rounded-[10px] bg-[var(--accent-soft)] text-[16px] flex items-center justify-center active:scale-90 transition-transform cursor-pointer"
+                        onClick={() => speak(c.ru, "ru", c.audioRuUrl)}
+                        className={`h-[36px] w-[36px] rounded-[10px] text-[16px] flex items-center justify-center active:scale-90 transition-transform cursor-pointer ${c.audioRuUrl ? "bg-[var(--good-soft)]" : "bg-[var(--accent-soft)]"}`}
+                        title={c.audioRuUrl ? "Запись (русский)" : "Синтез (русский)"}
                       >
-                        🔊
+                        {c.audioRuUrl ? "🎙️" : "🔊"}
                       </button>
                     </div>
 
@@ -155,10 +157,11 @@ export default function LearnSectionPage() {
                     <div className="flex items-center justify-center gap-2">
                       <span className="text-[22px] font-bold text-[var(--accent-dark)]">{c.kz}</span>
                       <button
-                        onClick={() => speak(c.kz, "kz")}
-                        className="h-[36px] w-[36px] rounded-[10px] bg-[var(--accent-soft)] text-[16px] flex items-center justify-center active:scale-90 transition-transform cursor-pointer"
+                        onClick={() => speak(c.kz, "kz", c.audioKzUrl)}
+                        className={`h-[36px] w-[36px] rounded-[10px] text-[16px] flex items-center justify-center active:scale-90 transition-transform cursor-pointer ${c.audioKzUrl ? "bg-[var(--good-soft)]" : "bg-[var(--accent-soft)]"}`}
+                        title={c.audioKzUrl ? "Запись (казахский)" : "Синтез (казахский)"}
                       >
-                        🔊
+                        {c.audioKzUrl ? "🎙️" : "🔊"}
                       </button>
                     </div>
                   </div>

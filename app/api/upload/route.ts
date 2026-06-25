@@ -2,8 +2,17 @@ import { NextRequest, NextResponse } from "next/server";
 import { put } from "@vercel/blob";
 import { requireAdmin } from "@/lib/auth-guard";
 
-const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 МБ
-const ALLOWED_TYPES = ["image/png", "image/jpeg", "image/webp", "image/gif"];
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 МБ (для аудио)
+const ALLOWED_TYPES = [
+  "image/png",
+  "image/jpeg",
+  "image/webp",
+  "image/gif",
+  "audio/mpeg",   // .mp3
+  "audio/ogg",    // .ogg
+  "audio/wav",    // .wav
+  "audio/mp4",    // .m4a
+];
 
 export async function POST(req: NextRequest) {
   const { error } = await requireAdmin();

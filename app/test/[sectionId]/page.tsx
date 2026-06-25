@@ -99,7 +99,7 @@ export default function TestRunPage() {
     if (answered) return;
     setAnswered(optId);
     const opt = q.options.find((o) => o.id === optId);
-    if (opt) speak(opt.kz, "kz");
+    if (opt) speak(opt.kz, "kz", opt.audioKzUrl);
     if (optId === q.card.id) setCorrectCount((c) => c + 1);
 
     setTimeout(() => {
@@ -126,10 +126,10 @@ export default function TestRunPage() {
         </div>
         <div className="text-[22px] font-extrabold mb-1">{q.card.ru}</div>
         <button
-          onClick={() => speak(q.card.ru, "ru")}
-          className="mb-[22px] rounded-[10px] bg-[var(--accent-soft)] text-[var(--accent-dark)] px-3 py-1.5 text-xs font-bold"
+          onClick={() => speak(q.card.ru, "ru", q.card.audioRuUrl)}
+          className={`mb-[22px] rounded-[10px] px-3 py-1.5 text-xs font-bold ${q.card.audioRuUrl ? "bg-[var(--good-soft)] text-[var(--good)]" : "bg-[var(--accent-soft)] text-[var(--accent-dark)]"}`}
         >
-          🔊 Слушать
+          {q.card.audioRuUrl ? "🎙️ Слушать" : "🔊 Слушать"}
         </button>
 
         <div className="w-full flex flex-col gap-3">
@@ -148,10 +148,10 @@ export default function TestRunPage() {
               >
                 <span>{opt.kz}</span>
                 <span
-                  onClick={(e) => { e.stopPropagation(); speak(opt.kz, "kz"); }}
-                  className="text-[18px]"
+                  onClick={(e) => { e.stopPropagation(); speak(opt.kz, "kz", opt.audioKzUrl); }}
+                  className="text-[18px] cursor-pointer"
                 >
-                  🔊
+                  {opt.audioKzUrl ? "🎙️" : "🔊"}
                 </span>
               </button>
             );

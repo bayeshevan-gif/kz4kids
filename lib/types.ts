@@ -16,6 +16,8 @@ export type CardDTO = {
   emoji: string;
   imageUrl: string | null;
   gifUrl: string | null;
+  audioRuUrl: string | null;
+  audioKzUrl: string | null;
   order: number;
   learned: boolean;
 };
