@@ -234,21 +234,21 @@ export default function AdminPage() {
                     В этом разделе ещё нет карточек. Создайте первую карточку.
                   </div>
                 ) : (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 auto-rows-fr">
                     {cards.map((c: CardDTO) => (
-                      <div key={c.id} className="bg-white rounded-[16px] p-4 border border-[var(--line)] shadow-sm hover:shadow-md transition-shadow">
-                        <div className="flex items-start gap-3">
-                          <div className="w-14 h-14 rounded-lg bg-gray-50 flex items-center justify-center text-2xl">
+                      <div key={c.id} className="bg-white rounded-[16px] p-4 border border-[var(--line)] shadow-sm hover:shadow-md transition-shadow h-full flex flex-col">
+                        <div className="flex items-start gap-3 flex-1">
+                          <div className="w-14 h-14 rounded-lg bg-gray-50 flex items-center justify-center text-2xl flex-shrink-0">
                             <BookOpen size={24} />
                           </div>
                           <div className="flex-1 min-w-0">
-                            <div className="font-semibold text-sm truncate">{c.ru}</div>
-                            <div className="text-xs text-[var(--ink-soft)]">{c.kz}</div>
+                            <div className="font-semibold text-sm truncate break-normal whitespace-normal">{c.ru}</div>
+                            <div className="text-xs text-[var(--ink-soft)] break-normal whitespace-normal">{c.kz}</div>
                           </div>
-                          <div className="flex gap-2">
-                            <button onClick={() => setCardForm(c)} className="p-2 rounded-md bg-gray-50 hover:bg-gray-100"><Edit2 size={16} /></button>
-                            <button onClick={() => deleteCard(c.id)} className="p-2 rounded-md bg-gray-50 hover:bg-gray-100"><Trash2 size={16} /></button>
-                          </div>
+                        </div>
+                        <div className="flex gap-2 mt-3 justify-end">
+                          <button onClick={() => setCardForm(c)} className="p-2 rounded-md bg-gray-50 hover:bg-gray-100"><Edit2 size={16} /></button>
+                          <button onClick={() => deleteCard(c.id)} className="p-2 rounded-md bg-gray-50 hover:bg-gray-100"><Trash2 size={16} /></button>
                         </div>
                       </div>
                     ))}

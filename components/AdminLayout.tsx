@@ -9,10 +9,10 @@ type Props = {
 export default function AdminLayout({ sidebar, children }: Props) {
   return (
     <div className="min-h-screen w-full bg-[var(--bg)] text-[var(--ink)]">
-      <div className="max-w-[1400px] mx-auto px-4 lg:px-6">
-        <div className="grid grid-cols-[280px_1fr] gap-6 items-start py-6">
-          <aside className="w-[280px] sticky top-6 h-[calc(100vh-96px)] overflow-y-auto">{sidebar}</aside>
-          <section className="min-w-0">{children}</section>
+      <div className="w-full max-w-[1600px] mx-auto px-8 py-8">
+        <div className="grid grid-cols-[320px_1fr] gap-8 items-start">
+          <aside className="w-[320px] sticky top-8 h-[calc(100vh-96px)] overflow-y-auto">{sidebar}</aside>
+          <section className="min-w-0 break-normal whitespace-normal">{children}</section>
         </div>
       </div>
     </div>
