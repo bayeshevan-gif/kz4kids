@@ -29,10 +29,20 @@ export async function GET() {
     }),
   ]);
 
+  const allCardIds = levels.flatMap((level) => level.sections.flatMap((section) => section.cards.map((card) => card.id)));
+  const learnedCards = await prisma.userProgress.findMany({
+    where: { userId: session!.userId, cardId: { in: allCardIds } },
+    select: { cardId: true },
+  });
+  const learnedSet = new Set(learnedCards.map((item) => item.cardId));
+
   const levelsProgress = levels.map((level) => {
     const cards = level.sections.flatMap((section) => section.cards.map((card) => ({ ...card, sectionId: section.id })));
     const lessons = buildLessons(cards, 5);
-    const levelProgress = {
+    const completedLessons = lessons.filter((lesson) => lesson.every((card) => learnedSet.has(card.id))).length;
+    const finished = testResults.some((test) => test.levelId === level.id && test.lessonIndex === 0);
+
+    return {
       id: level.id,
       name: level.name,
       nameKz: level.nameKz,
@@ -40,11 +50,9 @@ export async function GET() {
       number: level.number,
       totalCards: cards.length,
       totalLessons: Math.max(1, lessons.length),
-      completedLessons: lessons.filter((lesson) =>
-        lesson.every((card) => testResults.some((test) => test.levelId === level.id && test.lessonIndex === 0))
-      ).length,
+      completedLessons,
+      finished,
     };
-    return levelProgress;
   });
 
   const recentTests = testResults.slice(0, 10).map((t) => {

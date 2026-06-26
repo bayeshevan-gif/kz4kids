@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import AppHeader from "@/components/AppHeader";
 import TabBar from "@/components/TabBar";
 import LearningPath from "@/components/LearningPath";
@@ -12,9 +12,9 @@ const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
 export default function LearnLevelPage() {
   const router = useRouter();
-  const search = useSearchParams();
-  const levelId = search.get("levelId");
-  const lessonIndex = Number(search.get("lessonIndex") ?? "1");
+  const [queryReady, setQueryReady] = useState(false);
+  const [levelId, setLevelId] = useState<string | null>(null);
+  const [lessonIndex, setLessonIndex] = useState(1);
 
   const [data, setData] = useState<{
     level: { id: string; name: string; nameKz: string; emoji: string; number: number };
@@ -27,7 +27,14 @@ export default function LearnLevelPage() {
   const [updating, setUpdating] = useState(false);
 
   useEffect(() => {
-    if (!levelId) return;
+    const search = new URLSearchParams(window.location.search);
+    setLevelId(search.get("levelId"));
+    setLessonIndex(Number(search.get("lessonIndex") ?? "1"));
+    setQueryReady(true);
+  }, []);
+
+  useEffect(() => {
+    if (!queryReady || !levelId) return;
     setLoading(true);
     setError("");
     fetcher(`/api/learning/lesson?levelId=${encodeURIComponent(levelId)}&lessonIndex=${lessonIndex}`)
@@ -41,7 +48,7 @@ export default function LearnLevelPage() {
       })
       .catch(() => setError("Не удалось загрузить урок"))
       .finally(() => setLoading(false));
-  }, [levelId, lessonIndex]);
+  }, [queryReady, levelId, lessonIndex]);
 
   const learnedCount = useMemo(() => data?.cards.filter((card) => card.learned).length ?? 0, [data]);
   const canProceed = data?.cards.length ? true : false;
@@ -75,6 +82,17 @@ export default function LearnLevelPage() {
     });
     setUpdating(false);
     router.push(`/test?levelId=${encodeURIComponent(levelId || "")}&lessonIndex=${data.lessonIndex}`);
+  }
+
+  if (!queryReady) {
+    return (
+      <>
+        <AppHeader />
+        <main className="px-[18px] py-16 text-center">
+          <p className="text-[var(--ink-soft)] mb-4">Загрузка параметров...</p>
+        </main>
+      </>
+    );
   }
 
   if (!levelId) {

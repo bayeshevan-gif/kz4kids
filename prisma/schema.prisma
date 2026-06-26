@@ -15,7 +15,8 @@ model User {
   role         Role     @default(CHILD)
   createdAt    DateTime @default(now())
 
-  progress UserProgress[]
+  progress    UserProgress[]
+  testResults TestResult[]
 
   @@map("users")
 }
@@ -26,15 +27,16 @@ enum Role {
 }
 
 model LearningLevel {
-  id        String   @id @default(cuid())
-  name      String
-  nameKz    String
-  emoji     String   @default("🎯")
-  number    Int      @default(1)
-  order     Int      @default(0)
-  createdAt DateTime @default(now())
+  id          String       @id @default(cuid())
+  name        String
+  nameKz      String
+  emoji       String       @default("🎯")
+  number      Int          @default(1)
+  order       Int          @default(0)
+  createdAt   DateTime     @default(now())
 
-  sections Section[]
+  sections    Section[]
+  testResults TestResult[]
 
   @@unique([number])
   @@map("learning_levels")

@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import useSWR from "swr";
 import { useUser } from "@/lib/user-context";
-import type { SectionDTO, CardDTO } from "@/lib/types";
+import type { SectionDTO, CardDTO, LevelDTO } from "@/lib/types";
 
 const fetcher = (u: string) => fetch(u).then((r) => r.json());
 const EMOJIS = ["📁","🔢","👪","🐾","🎨","🍎","🚗","🏠","📚","⚽","🎵","🌳","🐱","🐶","🟢","🔵","🔴","🟡","1️⃣","2️⃣"];
@@ -11,15 +11,24 @@ const EMOJIS = ["📁","🔢","👪","🐾","🎨","🍎","🚗","🏠","📚","
 export default function AdminPage() {
   const { user, loading } = useUser();
   const router = useRouter();
-  const { data: sectionsData, mutate: mutateSections } = useSWR<{ sections: SectionDTO[] }>("/api/sections", fetcher);
-  const sections = sectionsData?.sections ?? [];
+  const [activeLevel, setActiveLevel] = useState<string | null>(null);
   const [activeSection, setActiveSection] = useState<string | null>(null);
+
+  const { data: levelsData, mutate: mutateLevels } = useSWR<{ levels: LevelDTO[] }>("/api/levels", fetcher);
+  const levels = levelsData?.levels ?? [];
+  const { data: sectionsData, mutate: mutateSections } = useSWR<{ sections: SectionDTO[] }>(
+    activeLevel ? `/api/sections?levelId=${activeLevel}` : "/api/sections",
+    fetcher
+  );
+  const sections = sectionsData?.sections ?? [];
   const { data: cardsData, mutate: mutateCards } = useSWR<{ cards: CardDTO[] }>(
-    activeSection ? `/api/cards?sectionId=${activeSection}` : null, fetcher
+    activeSection ? `/api/cards?sectionId=${activeSection}` : null,
+    fetcher
   );
   const cards = cardsData?.cards ?? [];
 
   const [sectionForm, setSectionForm] = useState<Partial<SectionDTO>>({ emoji: "📁" });
+  const [levelForm, setLevelForm] = useState<Partial<LevelDTO>>({ emoji: "🎯", number: 1 });
   const [cardForm, setCardForm] = useState<Partial<CardDTO>>({ emoji: "🃏" });
   const [uploading, setUploading] = useState(false);
 
@@ -80,23 +89,27 @@ export default function AdminPage() {
 
   async function saveSection() {
     if (!sectionForm.name?.trim()) return;
+    const levelId = sectionForm.levelId || activeLevel;
+    if (!levelId) return;
+
     const payload: any = {
       name: sectionForm.name.trim(),
       nameKz: sectionForm.nameKz?.trim() || "",
       emoji: sectionForm.emoji || "📁",
-      cardsPerLesson: typeof sectionForm.cardsPerLesson === 'number' ? sectionForm.cardsPerLesson : 6,
+      levelId,
     };
+
     if (sectionForm.id) {
-      await fetch(`/api/sections/${sectionForm.id}`, { 
-        method: "PATCH", 
-        headers: { "Content-Type": "application/json" }, 
-        body: JSON.stringify(payload) 
+      await fetch(`/api/sections/${sectionForm.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
       });
     } else {
-      await fetch("/api/sections", { 
-        method: "POST", 
-        headers: { "Content-Type": "application/json" }, 
-        body: JSON.stringify(payload) 
+      await fetch("/api/sections", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
       });
     }
     setSectionForm({ emoji: "📁" });
@@ -107,6 +120,40 @@ export default function AdminPage() {
     if (!confirm("Удалить раздел и все карточки в нём?")) return;
     await fetch(`/api/sections/${id}`, { method: "DELETE" });
     if (activeSection === id) setActiveSection(null);
+    mutateSections();
+  }
+
+  async function saveLevel() {
+    if (!levelForm.name?.trim()) return;
+    const payload: any = {
+      name: levelForm.name.trim(),
+      nameKz: levelForm.nameKz?.trim() || "",
+      emoji: levelForm.emoji || "🎯",
+      number: typeof levelForm.number === "number" ? levelForm.number : 1,
+    };
+
+    if (levelForm.id) {
+      await fetch(`/api/levels/${levelForm.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+    } else {
+      await fetch("/api/levels", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+    }
+    setLevelForm({ emoji: "🎯", number: 1 });
+    mutateLevels();
+  }
+
+  async function deleteLevel(id: string) {
+    if (!confirm("Удалить уровень? Это также удалит все его разделы и карточки.")) return;
+    await fetch(`/api/levels/${id}`, { method: "DELETE" });
+    if (activeLevel === id) setActiveLevel(null);
+    mutateLevels();
     mutateSections();
   }
 
@@ -176,6 +223,110 @@ export default function AdminPage() {
         
         {/* Колонки разделов (1/3 ширины на десктопе) */}
         <div className="lg:col-span-1 flex flex-col gap-6">
+          <div className="bg-white rounded-2xl p-4 border border-[var(--line)] card-shadow">
+            <div className="flex items-center justify-between mb-3">
+              <div>
+                <h2 className="text-lg font-black text-[var(--ink)]">Уровни</h2>
+                <p className="text-[11px] text-[var(--ink-soft)]">Создавай уровни и привязывай к ним разделы.</p>
+              </div>
+              <button
+                onClick={() => setLevelForm({ emoji: "🎯", number: (levels.length ? Math.max(...levels.map((lvl) => lvl.number)) + 1 : 1) })}
+                className="rounded-xl bg-[var(--accent)] px-3 py-2 text-xs font-black text-white active:scale-95 transition-transform"
+              >
+                Добавить
+              </button>
+            </div>
+            <div className="flex flex-col gap-2 max-h-[240px] overflow-y-auto pr-1">
+              {levels.map((level) => (
+                <button
+                  key={level.id}
+                  onClick={() => {
+                    setActiveLevel(level.id);
+                    setActiveSection(null);
+                  }}
+                  className={`w-full text-left rounded-xl p-3 border-2 transition-all ${activeLevel === level.id ? "border-[var(--accent)] bg-[var(--accent-soft)]" : "border-[var(--line)] bg-white hover:border-[var(--accent-dark)]"}`}
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-2">
+                      <span className="text-2xl">{level.emoji}</span>
+                      <div>
+                        <div className="font-extrabold text-sm">{level.number}. {level.name}</div>
+                        <div className="text-[11px] text-[var(--ink-soft)]">{level.nameKz}</div>
+                      </div>
+                    </div>
+                    <div className="flex gap-1">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setLevelForm(level);
+                        }}
+                        className="text-[10px] rounded-lg bg-blue-50 px-2 py-1 text-blue-600 hover:bg-blue-100"
+                      >
+                        ✏️
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          deleteLevel(level.id);
+                        }}
+                        className="text-[10px] rounded-lg bg-[var(--bad-soft)] px-2 py-1 text-[var(--bad)] hover:opacity-80"
+                      >
+                        🗑️
+                      </button>
+                    </div>
+                  </div>
+                </button>
+              ))}
+            </div>
+            <div className="mt-4 bg-[var(--bg)] rounded-2xl p-4 border border-[var(--line)]">
+              <h3 className="text-sm font-black mb-2">{levelForm.id ? "Редактировать уровень" : "Новый уровень"}</h3>
+              <input
+                placeholder="Название (рус)"
+                value={levelForm.name || ""}
+                onChange={(e) => setLevelForm({ ...levelForm, name: e.target.value })}
+                className="w-full border-2 border-[var(--line)] rounded-lg p-2 mb-2 text-sm focus:border-[var(--accent)] outline-none"
+              />
+              <input
+                placeholder="Название (қаз)"
+                value={levelForm.nameKz || ""}
+                onChange={(e) => setLevelForm({ ...levelForm, nameKz: e.target.value })}
+                className="w-full border-2 border-[var(--line)] rounded-lg p-2 mb-2 text-sm focus:border-[var(--accent)] outline-none"
+              />
+              <div className="grid grid-cols-2 gap-2 mb-3">
+                <input
+                  type="number"
+                  min={1}
+                  placeholder="Номер уровня"
+                  value={levelForm.number ?? 1}
+                  onChange={(e) => setLevelForm({ ...levelForm, number: Number(e.target.value) })}
+                  className="w-full border-2 border-[var(--line)] rounded-lg p-2 text-sm focus:border-[var(--accent)] outline-none"
+                />
+                <input
+                  placeholder="Emoji"
+                  value={levelForm.emoji || "🎯"}
+                  onChange={(e) => setLevelForm({ ...levelForm, emoji: e.target.value })}
+                  className="w-full border-2 border-[var(--line)] rounded-lg p-2 text-sm focus:border-[var(--accent)] outline-none"
+                />
+              </div>
+              <div className="flex gap-2">
+                {levelForm.id && (
+                  <button
+                    onClick={() => setLevelForm({ emoji: "🎯", number: 1 })}
+                    className="flex-1 bg-gray-100 text-[var(--ink-soft)] rounded-xl py-2.5 text-xs font-black cursor-pointer active:scale-95 transition-transform"
+                  >
+                    Отмена
+                  </button>
+                )}
+                <button
+                  onClick={saveLevel}
+                  className="flex-1 bg-[var(--accent)] text-white rounded-xl py-2.5 text-xs font-black card-shadow cursor-pointer active:scale-95 transition-transform"
+                >
+                  {levelForm.id ? "Сохранить" : "Добавить"}
+                </button>
+              </div>
+            </div>
+          </div>
+
           <div>
             <h2 className="text-lg font-black mb-3 text-[var(--ink)]">Разделы</h2>
             <div className="flex flex-col gap-2 mb-4 max-h-[400px] overflow-y-auto pr-1">
@@ -235,17 +386,27 @@ export default function AdminPage() {
               onChange={e => setSectionForm({...sectionForm, nameKz: e.target.value})} 
               className="w-full border-2 border-[var(--line)] rounded-lg p-2 mb-3 text-sm focus:border-[var(--accent)] outline-none" 
             />
-            <div className="flex gap-2 mb-3">
-              <div className="flex-1">
-                <label className="text-xs text-[var(--ink-soft)] font-extrabold mb-1.5 block">Карточек в уроке</label>
-                <input
-                  type="number"
-                  min={1}
-                  value={sectionForm.cardsPerLesson ?? 6}
-                  onChange={e => setSectionForm({...sectionForm, cardsPerLesson: Number(e.target.value)})}
+            <div className="flex flex-col gap-3 mb-3">
+              <div>
+                <label className="text-xs text-[var(--ink-soft)] font-extrabold mb-1.5 block">Уровень</label>
+                <select
+                  value={sectionForm.levelId || activeLevel || ""}
+                  onChange={(e) => setSectionForm({ ...sectionForm, levelId: e.target.value })}
                   className="w-full border-2 border-[var(--line)] rounded-lg p-2 text-sm focus:border-[var(--accent)] outline-none"
-                />
+                >
+                  <option value="" disabled>
+                    Выберите уровень
+                  </option>
+                  {levels.map((level) => (
+                    <option key={level.id} value={level.id}>
+                      {level.number}. {level.name}
+                    </option>
+                  ))}
+                </select>
               </div>
+              {!levels.length && (
+                <div className="text-[11px] text-[var(--bad)]">Сначала добавьте уровень.</div>
+              )}
             </div>
             
             <label className="text-xs text-[var(--ink-soft)] font-extrabold mb-1.5 block">Иконка (Эмодзи)</label>

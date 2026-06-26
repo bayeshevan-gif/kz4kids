@@ -2,14 +2,27 @@
 import useSWR from "swr";
 import AppHeader from "@/components/AppHeader";
 import TabBar from "@/components/TabBar";
-import type { SectionDTO } from "@/lib/types";
 
 const fetcher = (u: string) => fetch(u).then((r) => r.json());
 
+type LevelProgress = {
+  id: string;
+  name: string;
+  nameKz: string;
+  emoji: string;
+  number: number;
+  totalCards: number;
+  totalLessons: number;
+  completedLessons: number;
+  unlocked?: boolean;
+  finished?: boolean;
+};
+
 type RecentTest = {
   id: string;
-  sectionName: string;
-  sectionEmoji: string;
+  levelName: string;
+  levelEmoji: string;
+  lessonIndex: number;
   correctCount: number;
   totalCount: number;
   completedAt: string;
@@ -20,13 +33,12 @@ type StatsResponse = {
   completedTests: number;
   averageScore: number;
   recentTests: RecentTest[];
+  levels: LevelProgress[];
 };
 
 export default function ProfilePage() {
   const { data: stats } = useSWR<StatsResponse>("/api/progress/stats", fetcher);
-  const { data: sectionsData } = useSWR<{ sections: SectionDTO[] }>("/api/sections", fetcher);
-  const sections = sectionsData?.sections ?? [];
-
+  const levels = stats?.levels ?? [];
   const recentTests = stats?.recentTests ?? [];
 
   return (
@@ -51,23 +63,25 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        {/* Прогресс по разделам */}
-        <h2 className="text-[18px] font-extrabold mb-3 text-[var(--ink)]">Изучение разделов</h2>
+        {/* Прогресс по уровням */}
+        <h2 className="text-[18px] font-extrabold mb-3 text-[var(--ink)]">Путь обучения</h2>
         <div className="flex flex-col gap-3 mb-6">
-          {sections.map((s: SectionDTO) => {
-            const pct = s.totalCards > 0 ? Math.round((s.learnedCards / s.totalCards) * 100) : 0;
+          {levels.map((level) => {
+            const pct = level.totalLessons > 0 ? Math.round((level.completedLessons / level.totalLessons) * 100) : 0;
             return (
-              <div key={s.id} className="bg-[var(--card)] card-shadow rounded-[22px] p-3.5 flex gap-3.5 items-center border border-[var(--line)]">
-                <div className="h-14 w-14 rounded-2xl bg-[var(--accent-soft)] flex items-center justify-center text-2xl flex-shrink-0 card-shadow">{s.emoji}</div>
+              <div key={level.id} className="bg-[var(--card)] card-shadow rounded-[22px] p-3.5 flex gap-3.5 items-center border border-[var(--line)]">
+                <div className="h-14 w-14 rounded-2xl bg-[var(--accent-soft)] flex items-center justify-center text-2xl flex-shrink-0 card-shadow">{level.emoji}</div>
                 <div className="flex-1 min-w-0">
                   <div className="flex justify-between items-center mb-1">
-                    <span className="font-extrabold text-[15px] truncate">{s.name}</span>
-                    <span className="text-[11px] font-black text-[var(--accent-dark)] bg-[var(--accent-soft)] px-1.5 py-0.5 rounded-lg">{pct}%</span>
+                    <span className="font-extrabold text-[15px] truncate">{level.number}. {level.name}</span>
+                    <span className={`text-[11px] font-black px-1.5 py-0.5 rounded-lg ${level.finished ? "bg-[var(--good-soft)] text-[var(--good)]" : "bg-[var(--accent-soft)] text-[var(--accent-dark)]"}`}>
+                      {level.finished ? "Завершён" : `${pct}%`}
+                    </span>
                   </div>
                   <div className="h-2 rounded-lg bg-[var(--line)] overflow-hidden">
                     <div className="h-full bg-[var(--accent)] rounded-lg transition-all duration-500" style={{ width: `${pct}%` }} />
                   </div>
-                  <div className="text-[11px] text-[var(--ink-soft)] font-bold mt-1.5">{s.learnedCards} из {s.totalCards} слов</div>
+                  <div className="text-[11px] text-[var(--ink-soft)] font-bold mt-1.5">{level.completedLessons} из {level.totalLessons} уроков</div>
                 </div>
               </div>
             );
@@ -93,9 +107,9 @@ export default function ProfilePage() {
               return (
                 <div key={test.id} className="bg-[var(--card)] card-shadow rounded-2xl p-3 flex justify-between items-center border border-[var(--line)]">
                   <div className="flex items-center gap-3">
-                    <span className="text-2xl">{test.sectionEmoji}</span>
+                    <span className="text-2xl">{test.levelEmoji}</span>
                     <div>
-                      <div className="font-extrabold text-[14px] text-[var(--ink)]">{test.sectionName}</div>
+                      <div className="font-extrabold text-[14px] text-[var(--ink)]">{test.levelName} {test.lessonIndex > 0 ? `— урок ${test.lessonIndex}` : "(финальный тест)"}</div>
                       <div className="text-[10px] text-[var(--ink-soft)] font-bold">{dateFormatted}</div>
                     </div>
                   </div>

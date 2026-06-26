@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import AppHeader from "@/components/AppHeader";
 import TabBar from "@/components/TabBar";
 import { speak } from "@/lib/useSpeech";
@@ -11,10 +11,10 @@ const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
 export default function TestPage() {
   const router = useRouter();
-  const search = useSearchParams();
-  const levelId = search.get("levelId");
-  const lessonIndex = Number(search.get("lessonIndex") ?? "0");
-  const final = search.get("final") === "1";
+  const [queryReady, setQueryReady] = useState(false);
+  const [levelId, setLevelId] = useState<string | null>(null);
+  const [lessonIndex, setLessonIndex] = useState(0);
+  const [final, setFinal] = useState(false);
 
   const [levelsData, setLevelsData] = useState<{ levels: LevelDTO[] } | null>(null);
   const [questions, setQuestions] = useState<TestQuestionDTO[] | null>(null);
@@ -27,7 +27,6 @@ export default function TestPage() {
 
   const finished = questions ? qIndex >= questions.length : false;
   const currentLevel = levelsData?.levels.find((lvl) => lvl.id === levelId);
-  const isListView = !levelId;
   const testTitle = final
     ? currentLevel
       ? `Финальный тест уровня ${currentLevel.number}`
@@ -37,13 +36,23 @@ export default function TestPage() {
     : "Тест уровня";
 
   useEffect(() => {
+    const search = new URLSearchParams(window.location.search);
+    setLevelId(search.get("levelId"));
+    setLessonIndex(Number(search.get("lessonIndex") ?? "0"));
+    setFinal(search.get("final") === "1");
+    setQueryReady(true);
+  }, []);
+
+  const isListView = queryReady && !levelId;
+
+  useEffect(() => {
     if (isListView) {
       fetcher("/api/learning/levels").then((data) => setLevelsData(data));
     }
   }, [isListView]);
 
   useEffect(() => {
-    if (!levelId) return;
+    if (!queryReady || !levelId) return;
     const params = new URLSearchParams();
     params.set("levelId", levelId);
     if (lessonIndex > 0) params.set("lessonIndex", String(lessonIndex));
@@ -61,7 +70,7 @@ export default function TestPage() {
         }
       })
       .catch(() => setError("Не удалось получить вопросы"));
-  }, [levelId, lessonIndex, final]);
+  }, [queryReady, levelId, lessonIndex, final]);
 
   useEffect(() => {
     if (finished && !submitted && questions) {
@@ -85,13 +94,23 @@ export default function TestPage() {
     return Math.round((qIndex / questions.length) * 100);
   }, [qIndex, questions]);
 
+  if (!queryReady) {
+    return (
+      <>
+        <AppHeader />
+        <main className="px-[18px] py-16 text-center">
+          <p className="text-[var(--ink-soft)] mb-4">Загрузка параметров...</p>
+        </main>
+      </>
+    );
+  }
+
   function handleAnswer(optId: string) {
     if (answered || !questions) return;
     setAnswered(optId);
     const opt = questions[qIndex].options.find((o) => o.id === optId);
     if (opt) {
-      fetch("/api/voice-play", { method: "POST" });
-      // fallback: no additional action needed
+      // nothing extra needed: audio is played by speak if available
     }
     if (optId === questions[qIndex].card.id) {
       setCorrectCount((c) => c + 1);
