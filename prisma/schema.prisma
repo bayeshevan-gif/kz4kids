@@ -44,14 +44,13 @@ model LearningLevel {
 
 model Section {
   id        String   @id @default(cuid())
-  levelId   String
+  levelId   String?
   name      String
   nameKz    String
   emoji     String   @default("📁")
   order     Int      @default(0)
   createdAt DateTime @default(now())
-
-  level     LearningLevel @relation(fields: [levelId], references: [id], onDelete: Cascade)
+  level     LearningLevel? @relation(fields: [levelId], references: [id], onDelete: Cascade)
   cards     Card[]
 
   @@index([levelId])
@@ -94,14 +93,14 @@ model UserProgress {
 model TestResult {
   id            String   @id @default(cuid())
   userId        String
-  levelId       String
+  levelId       String?
   lessonIndex   Int?
   correctCount  Int
   totalCount    Int
   completedAt   DateTime @default(now())
 
   user  User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  level LearningLevel @relation(fields: [levelId], references: [id], onDelete: Cascade)
+  level LearningLevel? @relation(fields: [levelId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([levelId])
