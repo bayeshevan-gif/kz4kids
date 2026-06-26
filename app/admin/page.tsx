@@ -14,9 +14,8 @@ import CardEditor from "@/components/CardEditor";
 const fetcher = (u: string) => fetch(u).then((r) => r.json());
 
 export default function AdminPage() {
-  const { user: authUser, loading } = useUser();
+  const { user, loading } = useUser();
   const router = useRouter();
-  const user = process.env.NODE_ENV === "development" ? { id: "admin", name: "admin", role: "ADMIN" } : authUser;
   const [activeLevel, setActiveLevel] = useState<string | null>(null);
   const [activeSection, setActiveSection] = useState<string | null>(null);
 
