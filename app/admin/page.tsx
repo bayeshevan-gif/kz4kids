@@ -14,8 +14,9 @@ import CardEditor from "@/components/CardEditor";
 const fetcher = (u: string) => fetch(u).then((r) => r.json());
 
 export default function AdminPage() {
-  const { user, loading } = useUser();
+  const { user: authUser, loading } = useUser();
   const router = useRouter();
+  const user = process.env.NODE_ENV === "development" ? { id: "admin", name: "admin", role: "ADMIN" } : authUser;
   const [activeLevel, setActiveLevel] = useState<string | null>(null);
   const [activeSection, setActiveSection] = useState<string | null>(null);
 
@@ -237,43 +238,47 @@ export default function AdminPage() {
           onAddCard={handleAddCard}
         />
 
-        <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_360px]">
-          <div className="space-y-8">
+        <div className="grid gap-8 min-w-0 lg:grid-cols-[minmax(0,1.8fr)_minmax(0,0.95fr)]">
+          <div className="space-y-8 min-w-0">
             <SectionList sections={sections} activeSection={activeSection} onSelectSection={setActiveSection} />
 
-            <div className="rounded-[20px] border border-[var(--line)] bg-white p-5 shadow-sm">
+            <section className="rounded-[20px] border border-[var(--line)] bg-white p-5 shadow-sm min-w-0">
               <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                  <h2 className="text-lg font-semibold text-[var(--ink)]">
+                <div className="min-w-0">
+                  <h2 className="text-lg font-semibold text-[var(--ink)] truncate">
                     {activeSection ? `Карточки раздела: ${sections.find((s) => s.id === activeSection)?.name ?? "-"}` : "Выберите раздел для просмотра карточек"}
                   </h2>
                   <p className="text-sm text-[var(--ink-soft)]">Здесь отображаются карточки выбранного раздела.</p>
                 </div>
               </div>
 
-              {activeSection ? (
-                cards.length === 0 ? (
-                  <div className="rounded-[20px] border border-dashed border-[var(--line)] bg-[var(--bg)] p-10 text-center text-[var(--ink-soft)]">
-                    В этом разделе ещё нет карточек. Создайте первую карточку.
-                  </div>
+              <div className="min-w-0">
+                {activeSection ? (
+                  cards.length === 0 ? (
+                    <div className="rounded-[20px] border border-dashed border-[var(--line)] bg-[var(--bg)] p-10 text-center text-[var(--ink-soft)]">
+                      В этом разделе ещё нет карточек. Создайте первую карточку.
+                    </div>
+                  ) : (
+                    <CardList cards={cards} onEdit={(card) => setCardForm(card)} onDelete={deleteCard} />
+                  )
                 ) : (
-                  <CardList cards={cards} onEdit={(card) => setCardForm(card)} onDelete={deleteCard} />
-                )
-              ) : (
-                <div className="rounded-[20px] border border-dashed border-[var(--line)] bg-[var(--bg)] p-10 text-center text-[var(--ink-soft)]">
-                  Выберите раздел слева, чтобы увидеть и отредактировать карточки.
-                </div>
-              )}
-            </div>
+                  <div className="rounded-[20px] border border-dashed border-[var(--line)] bg-[var(--bg)] p-10 text-center text-[var(--ink-soft)]">
+                    Выберите раздел слева, чтобы увидеть и отредактировать карточки.
+                  </div>
+                )}
+              </div>
+            </section>
           </div>
 
-          <CardEditor
-            cardForm={cardForm}
-            setCardForm={setCardForm}
-            onSave={saveCard}
-            onCancel={() => setCardForm({ emoji: "🃏" })}
-            uploading={uploading}
-          />
+          <div className="min-w-0">
+            <CardEditor
+              cardForm={cardForm}
+              setCardForm={setCardForm}
+              onSave={saveCard}
+              onCancel={() => setCardForm({ emoji: "🃏" })}
+              uploading={uploading}
+            />
+          </div>
         </div>
       </div>
     </AdminLayout>

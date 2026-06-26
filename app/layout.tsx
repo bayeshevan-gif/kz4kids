@@ -26,7 +26,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="ru" className={nunito.variable}>
       <body className="bg-[var(--bg)] text-[var(--ink)] font-sans antialiased">
         <UserProvider>
-          <div className="mx-auto min-h-screen max-w-[480px] bg-[var(--bg)] pb-24 relative">
+          <div className="mx-auto min-h-screen w-full max-w-[1600px] bg-[var(--bg)] pb-24 relative">
             {children}
           </div>
         </UserProvider>
