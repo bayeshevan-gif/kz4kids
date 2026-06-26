@@ -1,25 +1,25 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
 @import "tailwindcss";
 
 :root {
-  --bg: #FFFDF6;
+  --bg: #F8FAFC;
   --card: #FFFFFF;
-  --ink: #2B2118;
-  --ink-soft: #6B5D4F;
-  --accent: #FF9A4A; /* warmer, brighter */
-  --accent-2: #FFD36E; /* secondary playful */
-  --accent-dark: #E06A1A;
-  --accent-soft: #FFF0E0;
-  --good: #4F9D6E;
-  --good-soft: #DCF0E2;
-  --bad: #D85B5B;
-  --bad-soft: #FBE0E0;
-  --line: #F3E8DB;
-  --sticker-border: #FFE8C9;
-  --glass-accent: rgba(255,154,74,0.12);
-  
-  /* Glassmorphism helpers */
-  --glass-bg: rgba(255, 248, 236, 0.85);
-  --glass-border: rgba(236, 224, 207, 0.6);
+  --ink: #111827;
+  --ink-soft: #6B7280;
+  --accent: #F97316; /* primary */
+  --accent-2: #FB923C;
+  --accent-dark: #ea580c;
+  --accent-soft: #FFF3ED;
+  --good: #16A34A;
+  --good-soft: #DCFCE7;
+  --bad: #DC2626;
+  --bad-soft: #FEE2E2;
+  --line: #E5E7EB;
+  --sticker-border: #F3F4F6;
+  --glass-accent: rgba(249,115,22,0.08);
+  --glass-bg: rgba(248,250,252,0.6);
+  --glass-border: rgba(229,231,235,0.8);
+  --card-radius: 16px;
 }
 
 * {
@@ -27,8 +27,9 @@
 }
 
 body {
-  font-family: var(--font-nunito), -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-family: Inter, -apple-system, "Segoe UI", Roboto, sans-serif;
   background-color: var(--bg);
+  color: var(--ink);
 }
 
 /* Scrollbar styling for modern browsers */

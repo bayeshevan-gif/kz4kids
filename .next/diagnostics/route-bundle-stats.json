@@ -1,11 +1,11 @@
 [
   {
-    "route": "/admin",
-    "firstLoadUncompressedJsBytes": 551122,
+    "route": "/learn/[sectionId]",
+    "firstLoadUncompressedJsBytes": 539087,
     "firstLoadChunkPaths": [
       ".next\\static\\chunks\\3hgrmc-4-849q.js",
       ".next\\static\\chunks\\158myu8e_yme3.js",
-      ".next\\static\\chunks\\1_o91ekpbomip.js",
+      ".next\\static\\chunks\\41a-4z0puxhqb.js",
       ".next\\static\\chunks\\1jq4o6yq14o4c.js",
       ".next\\static\\chunks\\07-hzktxqjvzd.js",
       ".next\\static\\chunks\\2nykiepra7i1k.js",
@@ -14,12 +14,12 @@
     ]
   },
   {
-    "route": "/learn/[sectionId]",
-    "firstLoadUncompressedJsBytes": 539087,
+    "route": "/admin",
+    "firstLoadUncompressedJsBytes": 538637,
     "firstLoadChunkPaths": [
       ".next\\static\\chunks\\3hgrmc-4-849q.js",
       ".next\\static\\chunks\\158myu8e_yme3.js",
-      ".next\\static\\chunks\\41a-4z0puxhqb.js",
+      ".next\\static\\chunks\\1v3lkcbu2awke.js",
       ".next\\static\\chunks\\1jq4o6yq14o4c.js",
       ".next\\static\\chunks\\07-hzktxqjvzd.js",
       ".next\\static\\chunks\\2nykiepra7i1k.js",
