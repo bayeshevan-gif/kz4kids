@@ -3,13 +3,18 @@ import { prisma } from "@/lib/prisma";
 import { requireAdmin, requireUser } from "@/lib/auth-guard";
 import type { SectionDTO } from "@/lib/types";
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   const { session, error } = await requireUser();
   if (error) return error;
 
+  const levelId = req.nextUrl.searchParams.get("levelId");
   const sections = await prisma.section.findMany({
-    orderBy: { order: "asc" },
+    where: levelId ? { levelId } : undefined,
+    orderBy: [{ order: "asc" }, { name: "asc" }],
     include: {
+      level: {
+        select: { id: true, name: true },
+      },
       cards: {
         select: {
           id: true,
@@ -24,12 +29,13 @@ export async function GET() {
 
   const result: SectionDTO[] = sections.map((s) => ({
     id: s.id,
+    levelId: s.levelId,
+    levelName: s.level?.name,
     name: s.name,
     nameKz: s.nameKz,
     emoji: s.emoji,
     order: s.order,
     totalCards: s.cards.length,
-    cardsPerLesson: s.cardsPerLesson ?? 6,
     learnedCards: s.cards.filter((c) => c.progress.length > 0).length,
   }));
 
@@ -44,10 +50,10 @@ export async function POST(req: NextRequest) {
   const name = typeof body?.name === "string" ? body.name.trim() : "";
   const nameKz = typeof body?.nameKz === "string" ? body.nameKz.trim() : "";
   const emoji = typeof body?.emoji === "string" ? body.emoji : "📁";
-  const cardsPerLesson = Number.isFinite(Number(body?.cardsPerLesson)) ? Number(body?.cardsPerLesson) : undefined;
+  const levelId = typeof body?.levelId === "string" ? body.levelId : "";
 
-  if (!name) {
-    return NextResponse.json({ error: "Название обязательно" }, { status: 400 });
+  if (!name || !levelId) {
+    return NextResponse.json({ error: "Название и уровень обязательны" }, { status: 400 });
   }
 
   const maxOrder = await prisma.section.aggregate({ _max: { order: true } });
@@ -56,8 +62,8 @@ export async function POST(req: NextRequest) {
       name,
       nameKz,
       emoji,
+      levelId,
       order: (maxOrder._max.order ?? 0) + 1,
-      cardsPerLesson: cardsPerLesson ?? 6,
     },
   });
 

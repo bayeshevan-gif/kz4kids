@@ -1,11 +1,25 @@
+export type LevelDTO = {
+  id: string;
+  name: string;
+  nameKz: string;
+  emoji: string;
+  number: number;
+  order: number;
+  totalCards: number;
+  learnedCards: number;
+  totalLessons: number;
+  completedLessons: number;
+};
+
 export type SectionDTO = {
   id: string;
+  levelId: string;
+  levelName?: string;
   name: string;
   nameKz: string;
   emoji: string;
   order: number;
   totalCards: number;
-  cardsPerLesson?: number;
   learnedCards: number;
 };
 

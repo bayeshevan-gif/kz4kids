@@ -25,17 +25,34 @@ enum Role {
   CHILD
 }
 
-model Section {
+model LearningLevel {
   id        String   @id @default(cuid())
   name      String
   nameKz    String
-  emoji     String   @default("📁")
-  cardsPerLesson Int    @default(6)
+  emoji     String   @default("🎯")
+  number    Int      @default(1)
   order     Int      @default(0)
   createdAt DateTime @default(now())
 
-  cards Card[]
+  sections Section[]
 
+  @@unique([number])
+  @@map("learning_levels")
+}
+
+model Section {
+  id        String   @id @default(cuid())
+  levelId   String
+  name      String
+  nameKz    String
+  emoji     String   @default("📁")
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+
+  level     LearningLevel @relation(fields: [levelId], references: [id], onDelete: Cascade)
+  cards     Card[]
+
+  @@index([levelId])
   @@map("sections")
 }
 
@@ -75,11 +92,16 @@ model UserProgress {
 model TestResult {
   id            String   @id @default(cuid())
   userId        String
-  sectionId     String
+  levelId       String
+  lessonIndex   Int?
   correctCount  Int
   totalCount    Int
   completedAt   DateTime @default(now())
 
+  user  User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  level LearningLevel @relation(fields: [levelId], references: [id], onDelete: Cascade)
+
   @@index([userId])
+  @@index([levelId])
   @@map("test_results")
 }
