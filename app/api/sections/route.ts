@@ -29,7 +29,7 @@ export async function GET(req: NextRequest) {
 
   const result: SectionDTO[] = sections.map((s) => ({
     id: s.id,
-    levelId: s.levelId,
+    levelId: s.levelId ?? "",
     levelName: s.level?.name,
     name: s.name,
     nameKz: s.nameKz,
