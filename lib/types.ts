@@ -17,6 +17,7 @@ export type SectionDTO = {
   id: string;
   levelId: string;
   levelName?: string;
+  cardsPerLesson?: number;
   name: string;
   nameKz: string;
   emoji: string;
