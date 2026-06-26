@@ -11,7 +11,7 @@ type Props = {
 
 export default function CardList({ cards, onEdit, onDelete }: Props) {
   return (
-    <div className="grid grid-cols-[repeat(auto-fill,minmax(260px,1fr))] gap-5">
+    <div className="w-full min-w-0 grid grid-cols-[repeat(auto-fill,minmax(260px,1fr))] gap-5">
       {cards.map((card) => (
         <article key={card.id} className="flex w-full min-w-0 min-h-0 flex-col overflow-hidden rounded-[20px] border border-[var(--line)] bg-white p-5 shadow-sm transition hover:shadow-md">
           <div className="mb-4 flex items-start gap-4 min-w-0">

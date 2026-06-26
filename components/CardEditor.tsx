@@ -12,7 +12,7 @@ type Props = {
 
 export default function CardEditor({ cardForm, setCardForm, onSave, onCancel, uploading }: Props) {
   return (
-    <div className="rounded-[20px] border border-[var(--line)] bg-white p-5 shadow-sm">
+    <div className="w-full min-w-0 rounded-[20px] border border-[var(--line)] bg-white p-5 shadow-sm">
       <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="text-lg font-semibold text-[var(--ink)]">{cardForm.id ? "Редактировать карточку" : "Создать карточку"}</h2>

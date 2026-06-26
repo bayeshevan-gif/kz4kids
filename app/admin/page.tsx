@@ -228,7 +228,7 @@ export default function AdminPage() {
         />
       }
     >
-      <div className="space-y-8">
+      <div className="space-y-8 min-w-0">
         <DashboardHeader
           counts={{ levels: levels.length, sections: sections.length, cards: cards.length }}
           onHome={handleHome}
