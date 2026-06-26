@@ -13,6 +13,8 @@ export default function TestRunPage() {
 
   const [questions, setQuestions] = useState<TestQuestionDTO[] | null>(null);
   const [qIndex, setQIndex] = useState(0);
+  const lessonIndex = search.get("lessonIndex");
+  const cumulative = Number(search.get("cumulative")) || 0;
   const [correctCount, setCorrectCount] = useState(0);
   const [correctCardIds, setCorrectCardIds] = useState<string[]>([]);
   const [answered, setAnswered] = useState<string | null>(null);
@@ -20,9 +22,11 @@ export default function TestRunPage() {
   const [submitted, setSubmitted] = useState(false);
 
   const finished = questions ? qIndex >= questions.length : false;
+  const testTitle = lessonIndex ? `Тест урока ${lessonIndex}` : cumulative > 0 ? `Тест ${cumulative} уроков` : "Тест по первому уроку";
 
   useEffect(() => {
     if (finished && !submitted && questions) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSubmitted(true);
       fetch("/api/tests/submit", {
         method: "POST",
@@ -33,7 +37,6 @@ export default function TestRunPage() {
   }, [finished, submitted, sectionId, correctCount, questions, correctCardIds]);
 
   useEffect(() => {
-    const search = useSearchParams();
     const lessonIndex = search.get("lessonIndex");
     const cumulative = search.get("cumulative");
     const params = new URLSearchParams();
@@ -126,6 +129,7 @@ export default function TestRunPage() {
     <>
       <AppHeader />
       <main className="px-[18px] flex flex-col items-center pt-2">
+        <div className="mb-3 text-[14px] font-extrabold text-[var(--accent-dark)]">{testTitle}</div>
         <div className="w-full h-2 rounded-lg bg-[var(--line)] mb-[22px] overflow-hidden">
           <div className="h-full bg-[var(--accent)] rounded-lg transition-all" style={{ width: `${progressPct}%` }} />
         </div>

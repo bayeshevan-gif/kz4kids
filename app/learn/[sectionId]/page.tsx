@@ -16,7 +16,6 @@ export default function LearnSectionPage() {
   const router = useRouter();
 
   const [currentIndex, setCurrentIndex] = useState(0);
-  const CARDS_PER_LESSON = 6;
 
   const { data: sectionsData } = useSWR<{ sections: SectionDTO[] }>("/api/sections", fetcher);
   const { data: cardsData, mutate } = useSWR<{ cards: CardDTO[] }>(
@@ -26,11 +25,12 @@ export default function LearnSectionPage() {
 
   const section = sectionsData?.sections.find((s) => s.id === sectionId);
   const cards = cardsData?.cards ?? [];
+  const cardsPerLesson = section?.cardsPerLesson ?? 6;
   const lessons: CardDTO[][] = [];
-  for (let i = 0; i < cards.length; i += CARDS_PER_LESSON) {
-    lessons.push(cards.slice(i, i + CARDS_PER_LESSON));
+  for (let i = 0; i < cards.length; i += cardsPerLesson) {
+    lessons.push(cards.slice(i, i + cardsPerLesson));
   }
-  const currentLessonIndex = Math.floor(currentIndex / CARDS_PER_LESSON);
+  const currentLessonIndex = Math.floor(currentIndex / cardsPerLesson);
   const lessonsCompleted = lessons.map((ls) => ls.every((c) => c.learned));
 
   // Automatically speak the Kazakh word when loading a card
@@ -211,9 +211,9 @@ export default function LearnSectionPage() {
                 </button>
                 <button
                   onClick={async () => {
-                    const prevLesson = Math.floor(currentIndex / CARDS_PER_LESSON);
+                    const prevLesson = Math.floor(currentIndex / cardsPerLesson);
                     const newIndex = Math.min(currentIndex + 1, cards.length);
-                    const newLesson = Math.floor(newIndex / CARDS_PER_LESSON);
+                    const newLesson = Math.floor(newIndex / cardsPerLesson);
                     // Если перешли на следующий урок — пометить предыдущий как завершённый
                     if (newLesson > prevLesson) {
                       await completeLessonIfNeeded(prevLesson);

@@ -21,26 +21,32 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "sectionId обязателен" }, { status: 400 });
   }
 
-  const cards = await prisma.card.findMany({ where: { sectionId }, orderBy: { order: 'asc' } });
+  const section = await prisma.section.findUnique({ where: { id: sectionId } });
+  if (!section) {
+    return NextResponse.json({ error: "Раздел не найден" }, { status: 404 });
+  }
 
-  // Lesson parameters
+  const cards = await prisma.card.findMany({ where: { sectionId }, orderBy: { order: 'asc' } });
   const lessonIndex = req.nextUrl.searchParams.get("lessonIndex"); // 1-based
   const cumulative = Number(req.nextUrl.searchParams.get("cumulative")) || 0; // number of lessons to include
-  const CARDS_PER_LESSON = 6;
+  const cardsPerLesson = section.cardsPerLesson ?? 6;
+  const totalLessons = Math.max(1, Math.ceil(cards.length / cardsPerLesson));
 
   let pool = cards;
   if (lessonIndex) {
-    const li = Math.max(1, Number(lessonIndex));
-    const start = (li - 1) * CARDS_PER_LESSON;
-    pool = cards.slice(start, start + CARDS_PER_LESSON);
+    const li = Math.min(Math.max(1, Number(lessonIndex) || 1), totalLessons);
+    const start = (li - 1) * cardsPerLesson;
+    pool = cards.slice(start, start + cardsPerLesson);
   } else if (cumulative > 0) {
-    const upto = Math.max(1, cumulative) * CARDS_PER_LESSON;
+    const upto = Math.max(1, cumulative) * cardsPerLesson;
     pool = cards.slice(0, upto);
+  } else {
+    pool = cards.slice(0, cardsPerLesson);
   }
 
-  if (cards.length < 2) {
+  if (cards.length < 2 || pool.length < 2) {
     return NextResponse.json(
-      { error: "Недостаточно карточек для теста (нужно минимум 2)" },
+      { error: "Недостаточно карточек для теста (нужно минимум 2 в выбранном уроке/наборе)" },
       { status: 400 }
     );
   }
