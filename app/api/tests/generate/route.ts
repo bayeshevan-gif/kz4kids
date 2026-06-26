@@ -1,57 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth-guard";
+import { buildLessons, shuffle } from "@/lib/learning";
 import type { CardDTO, TestQuestionDTO } from "@/lib/types";
 
-function shuffle<T>(arr: T[]): T[] {
-  const a = [...arr];
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [a[i], a[j]] = [a[j], a[i]];
-  }
-  return a;
-}
-
-export async function GET(req: NextRequest) {
-  const { error } = await requireUser();
-  if (error) return error;
-
-  const sectionId = req.nextUrl.searchParams.get("sectionId");
-  if (!sectionId) {
-    return NextResponse.json({ error: "sectionId обязателен" }, { status: 400 });
-  }
-
-  const section = await prisma.section.findUnique({ where: { id: sectionId } });
-  if (!section) {
-    return NextResponse.json({ error: "Раздел не найден" }, { status: 404 });
-  }
-
-  const cards = await prisma.card.findMany({ where: { sectionId }, orderBy: { order: 'asc' } });
-  const lessonIndex = req.nextUrl.searchParams.get("lessonIndex"); // 1-based
-  const cumulative = Number(req.nextUrl.searchParams.get("cumulative")) || 0; // number of lessons to include
-  const cardsPerLesson = section.cardsPerLesson ?? 6;
-  const totalLessons = Math.max(1, Math.ceil(cards.length / cardsPerLesson));
-
-  let pool = cards;
-  if (lessonIndex) {
-    const li = Math.min(Math.max(1, Number(lessonIndex) || 1), totalLessons);
-    const start = (li - 1) * cardsPerLesson;
-    pool = cards.slice(start, start + cardsPerLesson);
-  } else if (cumulative > 0) {
-    const upto = Math.max(1, cumulative) * cardsPerLesson;
-    pool = cards.slice(0, upto);
-  } else {
-    pool = cards.slice(0, cardsPerLesson);
-  }
-
-  if (cards.length < 2 || pool.length < 2) {
-    return NextResponse.json(
-      { error: "Недостаточно карточек для теста (нужно минимум 2 в выбранном уроке/наборе)" },
-      { status: 400 }
-    );
-  }
-
-  const toDTO = (c: (typeof cards)[number]): CardDTO => ({
+function cardToDTO(c: { id: string; sectionId: string; ru: string; kz: string; emoji: string; imageUrl: string | null; gifUrl: string | null; audioRuUrl: string | null; audioKzUrl: string | null; order: number }): CardDTO {
+  return {
     id: c.id,
     sectionId: c.sectionId,
     ru: c.ru,
@@ -63,15 +17,69 @@ export async function GET(req: NextRequest) {
     audioKzUrl: c.audioKzUrl,
     order: c.order,
     learned: false,
+  };
+}
+
+export async function GET(req: NextRequest) {
+  const { error } = await requireUser();
+  if (error) return error;
+
+  const levelId = req.nextUrl.searchParams.get("levelId");
+  if (!levelId) {
+    return NextResponse.json({ error: "levelId обязателен" }, { status: 400 });
+  }
+
+  const level = await prisma.learningLevel.findUnique({
+    where: { id: levelId },
+    include: {
+      sections: {
+        orderBy: { order: "asc" },
+        include: {
+          cards: {
+            orderBy: { order: "asc" },
+          },
+        },
+      },
+    },
   });
 
+  if (!level) {
+    return NextResponse.json({ error: "Уровень не найден" }, { status: 404 });
+  }
+
+  const cards = level.sections.flatMap((section) =>
+    section.cards.map((card) => ({ ...card, sectionId: section.id }))
+  );
+  const lessonIndex = Number(req.nextUrl.searchParams.get("lessonIndex") ?? "0");
+  const cumulative = Number(req.nextUrl.searchParams.get("cumulative") ?? "0");
+  const isFinal = req.nextUrl.searchParams.get("final") === "1";
+  const lessons = buildLessons(cards, 5);
+
+  let pool = cards;
+  if (isFinal) {
+    pool = cards;
+  } else if (lessonIndex > 0) {
+    const safeLesson = Math.min(Math.max(lessonIndex, 1), Math.max(lessons.length, 1));
+    pool = lessons[safeLesson - 1] ?? [];
+  } else if (cumulative > 0) {
+    pool = lessons.slice(0, Math.min(cumulative, lessons.length)).flat();
+  } else {
+    pool = lessons[0] ?? [];
+  }
+
+  if (cards.length < 2 || pool.length < 2) {
+    return NextResponse.json(
+      { error: "Недостаточно карточек для теста (нужно минимум 2 в выбранном уроке/наборе)" },
+      { status: 400 }
+    );
+  }
+
   const shuffledCards = shuffle(pool);
-  // Limit test size to 6 questions (as requested)
   const selected = shuffledCards.slice(0, 6);
   const questions: TestQuestionDTO[] = selected.map((card) => {
-    const others = shuffle(pool.filter((c) => c.id !== card.id)).slice(0, 3);
-    const options = shuffle([card, ...others]).map(toDTO);
-    return { card: toDTO(card), options };
+    const distractors = shuffle(cards.filter((c) => c.id !== card.id)).slice(0, 3);
+    const options = shuffle([card, ...distractors]).map(cardToDTO);
+    return { card: cardToDTO(card), options };
   });
 
   return NextResponse.json({ questions });

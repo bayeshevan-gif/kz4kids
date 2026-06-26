@@ -7,21 +7,27 @@ export async function POST(req: NextRequest) {
   if (error) return error;
 
   const body = await req.json().catch(() => null);
-  const sectionId = typeof body?.sectionId === "string" ? body.sectionId : "";
+  const levelId = typeof body?.levelId === "string" ? body.levelId : "";
+  const lessonIndex = Number.isFinite(Number(body?.lessonIndex)) ? Number(body.lessonIndex) : 0;
   const correctCount = Number(body?.correctCount);
   const totalCount = Number(body?.totalCount);
 
-  if (!sectionId || !Number.isFinite(correctCount) || !Number.isFinite(totalCount)) {
+  if (!levelId || !Number.isFinite(correctCount) || !Number.isFinite(totalCount)) {
     return NextResponse.json({ error: "Некорректные данные" }, { status: 400 });
   }
 
   const result = await prisma.testResult.create({
-    data: { userId: session!.userId, sectionId, correctCount, totalCount },
+    data: {
+      userId: session!.userId,
+      levelId,
+      lessonIndex: lessonIndex > 0 ? lessonIndex : 0,
+      correctCount,
+      totalCount,
+    },
   });
 
-  // If client provided list of correctly answered cardIds, mark them as learned
   const correctCardIds = Array.isArray(body?.correctCardIds)
-    ? body?.correctCardIds.filter((id: any) => typeof id === 'string')
+    ? body?.correctCardIds.filter((id: any) => typeof id === "string")
     : [];
 
   if (correctCardIds.length > 0) {

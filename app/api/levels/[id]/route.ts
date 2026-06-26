@@ -8,20 +8,27 @@ export async function PATCH(
 ) {
   const { error } = await requireAdmin();
   if (error) return error;
-  const { id } = await params;
 
+  const { id } = await params;
   const body = await req.json().catch(() => null);
   const name = typeof body?.name === "string" ? body.name.trim() : undefined;
   const nameKz = typeof body?.nameKz === "string" ? body.nameKz.trim() : undefined;
   const emoji = typeof body?.emoji === "string" ? body.emoji : undefined;
-  const levelId = typeof body?.levelId === "string" ? body.levelId : undefined;
+  const number = typeof body?.number === "number" ? body.number : undefined;
+  const order = typeof body?.order === "number" ? body.order : undefined;
 
-  const section = await prisma.section.update({
+  const level = await prisma.learningLevel.update({
     where: { id },
-    data: { name, nameKz, emoji, levelId },
+    data: {
+      name,
+      nameKz,
+      emoji,
+      number,
+      order,
+    },
   });
 
-  return NextResponse.json({ section });
+  return NextResponse.json({ level });
 }
 
 export async function DELETE(
@@ -30,9 +37,9 @@ export async function DELETE(
 ) {
   const { error } = await requireAdmin();
   if (error) return error;
-  const { id } = await params;
 
-  await prisma.section.delete({ where: { id } });
+  const { id } = await params;
+  await prisma.learningLevel.delete({ where: { id } });
 
   return NextResponse.json({ ok: true });
 }

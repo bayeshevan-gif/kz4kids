@@ -9,6 +9,8 @@ export type LevelDTO = {
   learnedCards: number;
   totalLessons: number;
   completedLessons: number;
+  unlocked?: boolean;
+  finished?: boolean;
 };
 
 export type SectionDTO = {
