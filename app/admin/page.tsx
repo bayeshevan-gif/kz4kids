@@ -205,7 +205,7 @@ export default function AdminPage() {
   }
 
   return (
-    <main className="px-6 pt-6 max-w-6xl mx-auto pb-24 animate-fade-in-up">
+    <main className="px-4 lg:px-12 pt-6 max-w-full lg:max-w-7xl mx-auto pb-24 animate-fade-in-up">
       <div className="flex items-center justify-between mb-6 pb-4 border-b border-[var(--line)]">
         <div>
           <h1 className="text-3xl font-black text-[var(--ink)]">Панель управления 🐻</h1>
