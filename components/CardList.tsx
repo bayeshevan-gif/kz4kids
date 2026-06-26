@@ -11,11 +11,11 @@ type Props = {
 
 export default function CardList({ cards, onEdit, onDelete }: Props) {
   return (
-    <div className="grid gap-5 xl:grid-cols-3 lg:grid-cols-2 sm:grid-cols-1">
+    <div className="grid grid-cols-[repeat(auto-fill,minmax(260px,1fr))] gap-5">
       {cards.map((card) => (
-        <article key={card.id} className="flex min-w-[260px] flex-col overflow-hidden rounded-[20px] border border-[var(--line)] bg-white p-5 shadow-sm transition hover:shadow-md">
-          <div className="mb-4 flex items-start gap-4">
-            <div className="flex h-14 w-14 items-center justify-center rounded-[18px] bg-[var(--accent-soft)] text-2xl">
+        <article key={card.id} className="flex w-full min-w-0 min-h-0 flex-col overflow-hidden rounded-[20px] border border-[var(--line)] bg-white p-5 shadow-sm transition hover:shadow-md">
+          <div className="mb-4 flex items-start gap-4 min-w-0">
+            <div className="flex h-14 w-14 items-center justify-center rounded-[18px] bg-[var(--accent-soft)] text-2xl flex-shrink-0">
               {card.emoji || "🃏"}
             </div>
             <div className="min-w-0">
@@ -23,7 +23,7 @@ export default function CardList({ cards, onEdit, onDelete }: Props) {
               <p className="mt-1 text-sm text-[var(--ink-soft)] truncate">{card.kz}</p>
             </div>
           </div>
-          <div className="flex flex-1 flex-col gap-3 text-sm text-[var(--ink-soft)]">
+          <div className="flex flex-1 flex-col gap-3 text-sm text-[var(--ink-soft)] min-w-0">
             {card.imageUrl ? (
               <div className="rounded-[16px] bg-gray-50 p-4 text-sm break-words">Изображение добавлено</div>
             ) : (

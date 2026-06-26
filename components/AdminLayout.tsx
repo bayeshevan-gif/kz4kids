@@ -11,7 +11,7 @@ export default function AdminLayout({ sidebar, children }: Props) {
     <div className="min-h-screen w-full bg-[var(--bg)] text-[var(--ink)]">
       <div className="w-full max-w-[1600px] mx-auto px-8 py-8">
         <div className="grid grid-cols-[340px_minmax(0,1fr)] gap-8 items-start">
-          <aside className="overflow-hidden">{sidebar}</aside>
+          <aside>{sidebar}</aside>
           <section className="min-w-0">{children}</section>
         </div>
       </div>
