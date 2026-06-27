@@ -1,6 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/auth-guard";
 
+type PixabayHit = {
+  id: number;
+  previewURL: string;
+  webformatURL: string;
+  largeImageURL: string;
+};
+
+type PixabayResponse = {
+  error?: string;
+  message?: string;
+  hits?: PixabayHit[];
+};
+
 export async function GET(req: NextRequest) {
   const { error } = await requireAdmin();
   if (error) return error;
@@ -11,7 +24,7 @@ export async function GET(req: NextRequest) {
 
   if (!key) {
     return NextResponse.json(
-      { error: "api_key_missing", message: "Pixabay API Key не найден. Пожалуйста, укажите его в настройках или в .env файле." },
+      { error: "api_key_missing", message: "Pixabay API Key not found. Add it in settings or .env." },
       { status: 400 }
     );
   }
@@ -20,16 +33,16 @@ export async function GET(req: NextRequest) {
     const res = await fetch(
       `https://pixabay.com/api/?key=${key}&q=${encodeURIComponent(query)}&image_type=illustration&lang=ru&per_page=24`
     );
-    const data = await res.json();
+    const data = (await res.json()) as PixabayResponse;
 
     if (data.error || !res.ok) {
       return NextResponse.json(
-        { error: "pixabay_api_error", message: data.message || "Ошибка запроса к Pixabay API" },
+        { error: "pixabay_api_error", message: data.message || "Pixabay API request failed" },
         { status: 500 }
       );
     }
 
-    const images = (data.hits || []).map((hit: any) => ({
+    const images = (data.hits || []).map((hit) => ({
       id: hit.id,
       previewUrl: hit.previewURL,
       webformatUrl: hit.webformatURL,
@@ -37,10 +50,8 @@ export async function GET(req: NextRequest) {
     }));
 
     return NextResponse.json({ images });
-  } catch (err: any) {
-    return NextResponse.json(
-      { error: "server_error", message: err.message || "Ошибка сервера при поиске картинок" },
-      { status: 500 }
-    );
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Server error while searching images";
+    return NextResponse.json({ error: "server_error", message }, { status: 500 });
   }
 }

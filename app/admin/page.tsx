@@ -13,6 +13,13 @@ import CardEditor from "@/components/CardEditor";
 
 const fetcher = (u: string) => fetch(u).then((r) => r.json());
 
+type SearchImage = {
+  id: number;
+  previewUrl: string;
+  webformatUrl: string;
+  largeImageUrl: string;
+};
+
 export default function AdminPage() {
   const { user, loading } = useUser();
   const router = useRouter();
@@ -37,9 +44,11 @@ export default function AdminPage() {
   const [cardForm, setCardForm] = useState<Partial<CardDTO>>({ emoji: "🃏" });
   const [uploading, setUploading] = useState(false);
 
-  const [pixabayKey, setPixabayKey] = useState("");
+  const [pixabayKey, setPixabayKey] = useState(() =>
+    typeof window === "undefined" ? "" : localStorage.getItem("pixabay_key") || ""
+  );
   const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [searchResults, setSearchResults] = useState<SearchImage[]>([]);
   const [searching, setSearching] = useState(false);
   const [searchError, setSearchError] = useState("");
 

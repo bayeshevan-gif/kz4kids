@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import AppHeader from "@/components/AppHeader";
 import TabBar from "@/components/TabBar";
 import { speak } from "@/lib/useSpeech";
@@ -10,11 +10,28 @@ import type { LevelDTO, TestQuestionDTO } from "@/lib/types";
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
 export default function TestPage() {
+  return (
+    <Suspense
+      fallback={
+        <>
+          <AppHeader />
+          <main className="px-[18px] py-16 text-center">
+            <p className="text-[var(--ink-soft)] mb-4">Загрузка параметров...</p>
+          </main>
+        </>
+      }
+    >
+      <TestPageContent />
+    </Suspense>
+  );
+}
+
+function TestPageContent() {
   const router = useRouter();
-  const [queryReady, setQueryReady] = useState(false);
-  const [levelId, setLevelId] = useState<string | null>(null);
-  const [lessonIndex, setLessonIndex] = useState(0);
-  const [final, setFinal] = useState(false);
+  const searchParams = useSearchParams();
+  const levelId = searchParams.get("levelId");
+  const lessonIndex = Number(searchParams.get("lessonIndex") ?? "0");
+  const final = searchParams.get("final") === "1";
 
   const [levelsData, setLevelsData] = useState<{ levels: LevelDTO[] } | null>(null);
   const [questions, setQuestions] = useState<TestQuestionDTO[] | null>(null);
@@ -23,7 +40,7 @@ export default function TestPage() {
   const [correctCount, setCorrectCount] = useState(0);
   const [correctCardIds, setCorrectCardIds] = useState<string[]>([]);
   const [answered, setAnswered] = useState<string | null>(null);
-  const [submitted, setSubmitted] = useState(false);
+  const submittedRef = useRef(false);
 
   const finished = questions ? qIndex >= questions.length : false;
   const currentLevel = levelsData?.levels.find((lvl) => lvl.id === levelId);
@@ -35,15 +52,7 @@ export default function TestPage() {
     ? `Тест урока ${lessonIndex}`
     : "Тест уровня";
 
-  useEffect(() => {
-    const search = new URLSearchParams(window.location.search);
-    setLevelId(search.get("levelId"));
-    setLessonIndex(Number(search.get("lessonIndex") ?? "0"));
-    setFinal(search.get("final") === "1");
-    setQueryReady(true);
-  }, []);
-
-  const isListView = queryReady && !levelId;
+  const isListView = !levelId;
 
   useEffect(() => {
     if (isListView) {
@@ -52,58 +61,62 @@ export default function TestPage() {
   }, [isListView]);
 
   useEffect(() => {
-    if (!queryReady || !levelId) return;
+    if (!levelId) return;
     const params = new URLSearchParams();
     params.set("levelId", levelId);
     if (lessonIndex > 0) params.set("lessonIndex", String(lessonIndex));
     if (final) params.set("final", "1");
 
-    setError("");
-    setQuestions(null);
-    fetch(`/api/tests/generate?${params.toString()}`)
-      .then((r) => r.json())
+    let cancelled = false;
+    Promise.resolve()
+      .then(() => {
+        if (cancelled) return null;
+        setError("");
+        setQuestions(null);
+        return fetch(`/api/tests/generate?${params.toString()}`);
+      })
+      .then((response) => response?.json())
       .then((data) => {
+        if (cancelled || !data) return;
         if (data.error) {
           setError(data.error);
         } else {
           setQuestions(data.questions);
         }
       })
-      .catch(() => setError("Не удалось получить вопросы"));
-  }, [queryReady, levelId, lessonIndex, final]);
+      .catch(() => {
+        if (!cancelled) setError("Не удалось получить вопросы");
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [levelId, lessonIndex, final]);
 
   useEffect(() => {
-    if (finished && !submitted && questions) {
-      setSubmitted(true);
-      fetch("/api/tests/submit", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          levelId,
-          lessonIndex: final ? 0 : lessonIndex,
-          correctCount,
-          totalCount: questions.length,
-          correctCardIds,
-        }),
-      });
-    }
-  }, [finished, submitted, levelId, lessonIndex, final, correctCount, questions, correctCardIds]);
+    submittedRef.current = false;
+  }, [questions]);
+
+  useEffect(() => {
+    if (!finished || submittedRef.current || !questions) return;
+    submittedRef.current = true;
+    fetch("/api/tests/submit", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        levelId,
+        lessonIndex: final ? 0 : lessonIndex,
+        correctCount,
+        totalCount: questions.length,
+        correctCardIds,
+      }),
+    });
+  }, [finished, levelId, lessonIndex, final, correctCount, questions, correctCardIds]);
 
   const progressPct = useMemo(() => {
     if (!questions) return 0;
     return Math.round((qIndex / questions.length) * 100);
   }, [qIndex, questions]);
-
-  if (!queryReady) {
-    return (
-      <>
-        <AppHeader />
-        <main className="px-[18px] py-16 text-center">
-          <p className="text-[var(--ink-soft)] mb-4">Загрузка параметров...</p>
-        </main>
-      </>
-    );
-  }
 
   function handleAnswer(optId: string) {
     if (answered || !questions) return;
@@ -135,6 +148,7 @@ export default function TestPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-[14px]">
             {levelsData?.levels.map((level) => {
               const locked = level.unlocked === false;
+              const canTakeFinal = !locked && level.totalCards > 0 && level.completedLessons >= level.totalLessons;
               return (
                 <div key={level.id} className="rounded-[22px] bg-[var(--card)] card-shadow p-[18px_14px] text-left">
                   <div className="flex items-center justify-between mb-3">
@@ -151,7 +165,7 @@ export default function TestPage() {
                     Перейти к урокам
                   </button>
                   <button
-                    disabled={!level.finished}
+                    disabled={!level.finished && !canTakeFinal}
                     onClick={() => router.push(`/test?levelId=${level.id}&final=1`)}
                     className="mt-3 w-full rounded-[18px] border-2 border-[var(--line)] bg-white py-3 text-[15px] font-bold text-[var(--ink)] disabled:opacity-50 disabled:pointer-events-none active:scale-95 transition-transform"
                   >

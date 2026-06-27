@@ -6,7 +6,14 @@ import { prisma } from "@/lib/prisma";
 // После успешного использования рекомендуется удалить этот файл или сменить SEED_SECRET.
 export async function GET(req: NextRequest) {
   const key = req.nextUrl.searchParams.get("key");
-  const expected = process.env.SEED_SECRET || "let-me-in-2026";
+  const expected = process.env.SEED_SECRET;
+
+  if (!expected) {
+    return NextResponse.json(
+      { error: "SEED_SECRET must be set before running the seed endpoint" },
+      { status: 503 }
+    );
+  }
 
   if (key !== expected) {
     return NextResponse.json({ error: "Неверный ключ" }, { status: 403 });
