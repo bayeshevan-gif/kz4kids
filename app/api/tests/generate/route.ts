@@ -14,6 +14,9 @@ type TestCard = {
   gifUrl: string | null;
   audioRuUrl: string | null;
   audioKzUrl: string | null;
+  audioUrl: string | null;
+  audioFileName: string | null;
+  audioDuration: number | null;
   order: number;
 };
 
@@ -28,6 +31,9 @@ function cardToDTO(card: TestCard): CardDTO {
     gifUrl: card.gifUrl,
     audioRuUrl: card.audioRuUrl,
     audioKzUrl: card.audioKzUrl,
+    audioUrl: card.audioUrl,
+    audioFileName: card.audioFileName,
+    audioDuration: card.audioDuration,
     order: card.order,
     learned: false,
   };
@@ -74,9 +80,15 @@ export async function GET(req: NextRequest) {
     const level = await prisma.learningLevel.findUnique({
       where: { id: levelId },
       include: {
-        sections: {
+        levelSections: {
           orderBy: { order: "asc" },
-          include: { cards: { orderBy: { order: "asc" } } },
+          include: {
+            section: {
+              include: {
+                cards: { orderBy: { order: "asc" } },
+              },
+            },
+          },
         },
       },
     });
@@ -85,8 +97,8 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Level not found" }, { status: 404 });
     }
 
-    const cards: TestCard[] = level.sections.flatMap((section) =>
-      section.cards.map((card) => ({ ...card, sectionId: section.id }))
+    const cards: TestCard[] = level.levelSections.flatMap((ls) =>
+      ls.section.cards.map((card) => ({ ...card, sectionId: ls.section.id }))
     );
     const lessons = buildLessons(cards, 5);
     let pool = cards;

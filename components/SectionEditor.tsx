@@ -1,9 +1,8 @@
 "use client";
 import React, { type Dispatch, type SetStateAction } from "react";
-import type { LevelDTO, SectionDTO } from "@/lib/types";
+import type { SectionDTO } from "@/lib/types";
 
 type Props = {
-  levels: LevelDTO[];
   sectionForm: Partial<SectionDTO>;
   setSectionForm: Dispatch<SetStateAction<Partial<SectionDTO>>>;
   onSave: () => Promise<void>;
@@ -11,14 +10,7 @@ type Props = {
   saving: boolean;
 };
 
-export default function SectionEditor({
-  levels,
-  sectionForm,
-  setSectionForm,
-  onSave,
-  onCancel,
-  saving,
-}: Props) {
+export default function SectionEditor({ sectionForm, setSectionForm, onSave, onCancel, saving }: Props) {
   return (
     <div className="w-full min-w-0 rounded-[20px] border border-[var(--line)] bg-white p-5 shadow-sm">
       <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
@@ -27,27 +19,12 @@ export default function SectionEditor({
             {sectionForm.id ? "Редактировать раздел" : "Создать раздел"}
           </h2>
           <p className="text-sm text-[var(--ink-soft)]">
-            Укажите название раздела и его уровень.
+            Укажите название раздела. Привязка к уровням происходит через управление уровнями.
           </p>
         </div>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <label className="space-y-2 text-sm">
-          <span>Уровень</span>
-          <select
-            value={sectionForm.levelId || ""}
-            onChange={(e) => setSectionForm((prev: Partial<SectionDTO>) => ({ ...prev, levelId: e.target.value }))}
-            className="w-full rounded-[16px] border border-[var(--line)] bg-white px-4 py-3 text-sm text-[var(--ink)] outline-none transition focus:border-[var(--accent)]"
-          >
-            <option value="">Выберите уровень</option>
-            {levels.map((level) => (
-              <option key={level.id} value={level.id}>
-                {level.number}. {level.name}
-              </option>
-            ))}
-          </select>
-        </label>
         <label className="space-y-2 text-sm">
           <span>Эмодзи</span>
           <input
@@ -57,9 +34,6 @@ export default function SectionEditor({
             className="w-full rounded-[16px] border border-[var(--line)] bg-white px-4 py-3 text-sm text-[var(--ink)] outline-none transition focus:border-[var(--accent)]"
           />
         </label>
-      </div>
-
-      <div className="mt-4 grid gap-4 sm:grid-cols-2">
         <label className="space-y-2 text-sm">
           <span>Название раздела</span>
           <input
@@ -69,6 +43,9 @@ export default function SectionEditor({
             className="w-full rounded-[16px] border border-[var(--line)] bg-white px-4 py-3 text-sm text-[var(--ink)] outline-none transition focus:border-[var(--accent)]"
           />
         </label>
+      </div>
+
+      <div className="mt-4 grid gap-4 sm:grid-cols-2">
         <label className="space-y-2 text-sm">
           <span>Название на казахском</span>
           <input
@@ -91,7 +68,7 @@ export default function SectionEditor({
         <button
           type="button"
           onClick={onSave}
-          disabled={saving || !sectionForm.name?.trim() || !sectionForm.levelId}
+          disabled={saving || !sectionForm.name?.trim()}
           className="rounded-[16px] bg-[var(--accent)] px-5 py-3 text-sm font-semibold text-white transition hover:brightness-95 disabled:cursor-not-allowed disabled:opacity-70"
         >
           {saving ? "Сохраняем..." : "Сохранить"}

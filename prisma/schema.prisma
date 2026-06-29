@@ -27,48 +27,63 @@ enum Role {
 }
 
 model LearningLevel {
-  id          String       @id @default(cuid())
-  name        String
-  nameKz      String
-  emoji       String       @default("🎯")
-  number      Int          @default(1)
-  order       Int          @default(0)
-  createdAt   DateTime     @default(now())
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  emoji       String   @default("🎯")
+  order       Int      @default(0)
+  isPublished Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
-  sections    Section[]
-  testResults TestResult[]
+  levelSections LevelSection[]
+  testResults   TestResult[]
 
-  @@unique([number])
   @@map("learning_levels")
 }
 
 model Section {
   id        String   @id @default(cuid())
-  levelId   String?
   name      String
   nameKz    String
   emoji     String   @default("📁")
   order     Int      @default(0)
   createdAt DateTime @default(now())
-  level     LearningLevel? @relation(fields: [levelId], references: [id], onDelete: Cascade)
-  cards     Card[]
 
-  @@index([levelId])
+  levelSections LevelSection[]
+  cards         Card[]
+
   @@map("sections")
 }
 
-model Card {
-  id        String   @id @default(cuid())
+model LevelSection {
+  levelId   String
   sectionId String
-  ru        String
-  kz        String
-  emoji     String   @default("🃏")
-  imageUrl  String?
-  gifUrl    String?
-  audioRuUrl String?
-  audioKzUrl String?
   order     Int      @default(0)
-  createdAt DateTime @default(now())
+
+  level   LearningLevel @relation(fields: [levelId], references: [id], onDelete: Cascade)
+  section Section       @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+
+  @@id([levelId, sectionId])
+  @@index([sectionId])
+  @@map("level_sections")
+}
+
+model Card {
+  id             String   @id @default(cuid())
+  sectionId      String
+  ru             String
+  kz             String
+  emoji          String   @default("🃏")
+  imageUrl       String?
+  gifUrl         String?
+  audioRuUrl     String?
+  audioKzUrl     String?
+  audioUrl       String?
+  audioFileName  String?
+  audioDuration  Int?
+  order          Int      @default(0)
+  createdAt      DateTime @default(now())
 
   section  Section        @relation(fields: [sectionId], references: [id], onDelete: Cascade)
   progress UserProgress[]
