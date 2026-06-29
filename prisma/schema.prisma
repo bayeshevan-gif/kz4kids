@@ -28,7 +28,7 @@ enum Role {
 
 model LearningLevel {
   id          String   @id @default(cuid())
-  title       String
+  title       String   @default("Новый уровень")
   description String?
   emoji       String   @default("🎯")
   order       Int      @default(0)
