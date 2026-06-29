@@ -1,10 +1,12 @@
 export type LevelDTO = {
   id: string;
-  name: string;
-  nameKz: string;
+  title: string;
+  description?: string;
   emoji: string;
-  number: number;
   order: number;
+  isPublished: boolean;
+  createdAt: string;
+  updatedAt: string;
   totalCards: number;
   learnedCards: number;
   totalLessons: number;
@@ -15,15 +17,13 @@ export type LevelDTO = {
 
 export type SectionDTO = {
   id: string;
-  levelId: string;
-  levelName?: string;
-  cardsPerLesson?: number;
   name: string;
   nameKz: string;
   emoji: string;
   order: number;
   totalCards: number;
   learnedCards: number;
+  levelIds?: string[];
 };
 
 export type CardDTO = {
@@ -36,6 +36,9 @@ export type CardDTO = {
   gifUrl: string | null;
   audioRuUrl: string | null;
   audioKzUrl: string | null;
+  audioUrl: string | null;
+  audioFileName: string | null;
+  audioDuration: number | null;
   order: number;
   learned: boolean;
 };

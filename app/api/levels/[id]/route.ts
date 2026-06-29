@@ -11,24 +11,35 @@ export async function PATCH(
 
   const { id } = await params;
   const body = await req.json().catch(() => null);
-  const name = typeof body?.name === "string" ? body.name.trim() : undefined;
-  const nameKz = typeof body?.nameKz === "string" ? body.nameKz.trim() : undefined;
+  const title = typeof body?.title === "string" ? body.title.trim() : undefined;
+  const description = typeof body?.description === "string" ? body.description.trim() : undefined;
   const emoji = typeof body?.emoji === "string" ? body.emoji : undefined;
-  const number = typeof body?.number === "number" ? body.number : undefined;
   const order = typeof body?.order === "number" ? body.order : undefined;
+  const isPublished = typeof body?.isPublished === "boolean" ? body.isPublished : undefined;
 
   const level = await prisma.learningLevel.update({
     where: { id },
     data: {
-      name,
-      nameKz,
+      title,
+      description,
       emoji,
-      number,
       order,
+      isPublished,
     },
   });
 
-  return NextResponse.json({ level });
+  return NextResponse.json({ 
+    level: {
+      id: level.id,
+      title: level.title,
+      description: level.description,
+      emoji: level.emoji,
+      order: level.order,
+      isPublished: level.isPublished,
+      createdAt: level.createdAt.toISOString(),
+      updatedAt: level.updatedAt.toISOString(),
+    }
+  });
 }
 
 export async function DELETE(
