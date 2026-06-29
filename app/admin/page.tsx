@@ -36,7 +36,7 @@ export default function AdminPage() {
     fetcher
   );
   const allSections = sectionsData?.sections ?? [];
-  const sections = showUnboundOnly ? allSections.filter((s) => !s.levelId) : allSections;
+  const sections = showUnboundOnly ? allSections.filter((s) => !s.levelIds || s.levelIds.length === 0) : allSections;
   const { data: cardsData, mutate: mutateCards } = useSWR<{ cards: CardDTO[] }>(
     activeSection ? `/api/cards?sectionId=${activeSection}` : null,
     fetcher
@@ -44,7 +44,7 @@ export default function AdminPage() {
   const cards = cardsData?.cards ?? [];
 
   const [sectionForm, setSectionForm] = useState<Partial<SectionDTO>>({ emoji: "📁" });
-  const [levelForm, setLevelForm] = useState<Partial<LevelDTO>>({ emoji: "🎯", number: 1 });
+  const [levelForm, setLevelForm] = useState<Partial<LevelDTO>>({ emoji: "🎯", order: 0 });
   const [cardForm, setCardForm] = useState<Partial<CardDTO>>({ emoji: "🃏" });
   const [uploading, setUploading] = useState(false);
   const [savingLevel, setSavingLevel] = useState(false);
@@ -99,15 +99,12 @@ export default function AdminPage() {
 
   async function saveSection() {
     if (!sectionForm.name?.trim()) return;
-    const levelId = sectionForm.levelId || activeLevel;
-    if (!levelId) return;
     setSavingSection(true);
     try {
       const payload: any = {
         name: sectionForm.name.trim(),
         nameKz: sectionForm.nameKz?.trim() || "",
         emoji: sectionForm.emoji || "📁",
-        levelId,
       };
 
       if (sectionForm.id) {
@@ -138,14 +135,15 @@ export default function AdminPage() {
   }
 
   async function saveLevel() {
-    if (!levelForm.name?.trim()) return;
+    if (!levelForm.title?.trim()) return;
     setSavingLevel(true);
     try {
       const payload: any = {
-        name: levelForm.name.trim(),
-        nameKz: levelForm.nameKz?.trim() || "",
+        title: levelForm.title.trim(),
+        description: levelForm.description || "",
         emoji: levelForm.emoji || "🎯",
-        number: typeof levelForm.number === "number" ? levelForm.number : 1,
+        order: typeof levelForm.order === "number" ? levelForm.order : 0,
+        isPublished: levelForm.isPublished ?? true,
       };
 
       if (levelForm.id) {
@@ -161,7 +159,7 @@ export default function AdminPage() {
           body: JSON.stringify(payload),
         });
       }
-      setLevelForm({ emoji: "🎯", number: 1 });
+      setLevelForm({ emoji: "🎯", order: 0 });
       mutateLevels();
     } finally {
       setSavingLevel(false);
@@ -228,8 +226,8 @@ export default function AdminPage() {
   }
 
   const handleHome = () => router.push("/");
-  const handleAddLevel = () => setLevelForm({ emoji: "🎯", number: levels.length ? Math.max(...levels.map((lvl) => lvl.number)) + 1 : 1 });
-  const handleAddSection = () => setSectionForm({ emoji: "📁", levelId: activeLevel || undefined });
+  const handleAddLevel = () => setLevelForm({ emoji: "🎯", order: levels.length ? Math.max(...levels.map((lvl) => lvl.order)) + 1 : 0 });
+  const handleAddSection = () => setSectionForm({ emoji: "📁" });
   const handleMoveSection = async (sectionId: string, levelId: string) => {
     await fetch(`/api/sections/${sectionId}`, {
       method: "PATCH",
@@ -273,20 +271,19 @@ export default function AdminPage() {
 
         <div className="grid gap-8 min-w-0 lg:grid-cols-[minmax(0,1.8fr)_minmax(0,0.95fr)]">
           <div className="space-y-8 min-w-0">
-            {(levelForm.name || sectionForm.name) && (
+            {(levelForm.title || sectionForm.name) && (
               <div className="grid gap-8 lg:grid-cols-2">
-                {levelForm.name !== undefined && (
+                {levelForm.title !== undefined && (
                   <LevelEditor
                     levelForm={levelForm}
                     setLevelForm={setLevelForm}
                     onSave={saveLevel}
-                    onCancel={() => setLevelForm({ emoji: "🎯", number: 1 })}
+                    onCancel={() => setLevelForm({ emoji: "🎯", order: 0 })}
                     saving={savingLevel}
                   />
                 )}
                 {sectionForm.name !== undefined && (
                   <SectionEditor
-                    levels={levels}
                     sectionForm={sectionForm}
                     setSectionForm={setSectionForm}
                     onSave={saveSection}
