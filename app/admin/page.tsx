@@ -25,6 +25,7 @@ export default function AdminPage() {
   const router = useRouter();
   const [activeLevel, setActiveLevel] = useState<string | null>(null);
   const [activeSection, setActiveSection] = useState<string | null>(null);
+  const [showUnboundOnly, setShowUnboundOnly] = useState(false);
 
   const { data: levelsData, mutate: mutateLevels } = useSWR<{ levels: LevelDTO[] }>("/api/levels", fetcher);
   const levels = levelsData?.levels ?? [];
@@ -32,7 +33,8 @@ export default function AdminPage() {
     activeLevel ? `/api/sections?levelId=${activeLevel}` : "/api/sections",
     fetcher
   );
-  const sections = sectionsData?.sections ?? [];
+  const allSections = sectionsData?.sections ?? [];
+  const sections = showUnboundOnly ? allSections.filter((s) => !s.levelId) : allSections;
   const { data: cardsData, mutate: mutateCards } = useSWR<{ cards: CardDTO[] }>(
     activeSection ? `/api/cards?sectionId=${activeSection}` : null,
     fetcher
@@ -215,6 +217,14 @@ export default function AdminPage() {
   const handleHome = () => router.push("/");
   const handleAddLevel = () => setLevelForm({ emoji: "🎯", number: levels.length ? Math.max(...levels.map((lvl) => lvl.number)) + 1 : 1 });
   const handleAddSection = () => setSectionForm({ emoji: "📁", levelId: activeLevel || undefined });
+  const handleMoveSection = async (sectionId: string, levelId: string) => {
+    await fetch(`/api/sections/${sectionId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ levelId }),
+    });
+    mutateSections();
+  };
   const handleAddCard = () => setCardForm({ emoji: "🃏" });
 
   return (
@@ -222,18 +232,20 @@ export default function AdminPage() {
       sidebar={
         <Sidebar
           levels={levels}
-          sections={sections}
+          sections={allSections}
           activeLevel={activeLevel}
           activeSection={activeSection}
           onSelectLevel={(id) => {
             setActiveLevel(id);
             setActiveSection(null);
             setCardForm({ emoji: "🃏" });
+            setShowUnboundOnly(false);
           }}
           onSelectSection={(id) => {
             setActiveSection(id);
             setCardForm({ emoji: "🃏" });
           }}
+          onMoveSection={handleMoveSection}
         />
       }
     >
@@ -248,7 +260,19 @@ export default function AdminPage() {
 
         <div className="grid gap-8 min-w-0 lg:grid-cols-[minmax(0,1.8fr)_minmax(0,0.95fr)]">
           <div className="space-y-8 min-w-0">
-            <SectionList sections={sections} activeSection={activeSection} onSelectSection={setActiveSection} />
+            <div className="flex items-center justify-between">
+              <SectionList sections={sections} activeSection={activeSection} onSelectSection={setActiveSection} />
+              <button
+                onClick={() => setShowUnboundOnly((prev) => !prev)}
+                className={`rounded-[14px] px-4 py-2 text-sm font-semibold transition ${
+                  showUnboundOnly
+                    ? "bg-orange-500 text-white"
+                    : "bg-white border border-[var(--line)] text-[var(--ink)] hover:border-[var(--accent-dark)]"
+                }`}
+              >
+                {showUnboundOnly ? "Показать все" : "⚠️ Без уровня"}
+              </button>
+            </div>
 
             <section className="rounded-[20px] border border-[var(--line)] bg-white p-5 shadow-sm min-w-0">
               <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
