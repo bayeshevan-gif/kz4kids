@@ -16,11 +16,15 @@ export async function GET(req: NextRequest) {
   const level = await prisma.learningLevel.findUnique({
     where: { id: levelId },
     include: {
-      sections: {
+      levelSections: {
         orderBy: { order: "asc" },
         include: {
-          cards: {
-            orderBy: { order: "asc" },
+          section: {
+            include: {
+              cards: {
+                orderBy: { order: "asc" },
+              },
+            },
           },
         },
       },
@@ -31,8 +35,8 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Уровень не найден" }, { status: 404 });
   }
 
-  const cards = level.sections.flatMap((section) =>
-    section.cards.map((card) => ({ ...card, sectionId: section.id }))
+  const cards = level.levelSections.flatMap((ls) =>
+    ls.section.cards.map((card) => ({ ...card, sectionId: ls.section.id }))
   );
   const lessons = buildLessons(cards, 5);
   const safeLesson = Math.min(Math.max(lessonIndex, 1), Math.max(lessons.length, 1));
@@ -47,10 +51,10 @@ export async function GET(req: NextRequest) {
   return NextResponse.json({
     level: {
       id: level.id,
-      name: level.name,
-      nameKz: level.nameKz,
+      name: level.title,
+      nameKz: level.title,
       emoji: level.emoji,
-      number: level.number,
+      number: level.order,
     },
     lessonIndex: safeLesson,
     totalLessons: Math.max(1, lessons.length),
