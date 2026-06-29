@@ -1,11 +1,11 @@
 "use client";
-import React from "react";
+import React, { type Dispatch, type SetStateAction } from "react";
 import type { LevelDTO, SectionDTO } from "@/lib/types";
 
 type Props = {
   levels: LevelDTO[];
   sectionForm: Partial<SectionDTO>;
-  setSectionForm: React.Dispatch<React.SetStateAction<Partial<SectionDTO>>>;
+  setSectionForm: Dispatch<SetStateAction<Partial<SectionDTO>>>;
   onSave: () => Promise<void>;
   onCancel: () => void;
   saving: boolean;
@@ -37,7 +37,7 @@ export default function SectionEditor({
           <span>Уровень</span>
           <select
             value={sectionForm.levelId || ""}
-            onChange={(e) => setSectionForm((prev) => ({ ...prev, levelId: e.target.value }))}
+            onChange={(e) => setSectionForm((prev: Partial<SectionDTO>) => ({ ...prev, levelId: e.target.value }))}
             className="w-full rounded-[16px] border border-[var(--line)] bg-white px-4 py-3 text-sm text-[var(--ink)] outline-none transition focus:border-[var(--accent)]"
           >
             <option value="">Выберите уровень</option>
@@ -53,7 +53,7 @@ export default function SectionEditor({
           <input
             type="text"
             value={sectionForm.emoji || ""}
-            onChange={(e) => setSectionForm((prev) => ({ ...prev, emoji: e.target.value }))}
+            onChange={(e) => setSectionForm((prev: Partial<SectionDTO>) => ({ ...prev, emoji: e.target.value }))}
             className="w-full rounded-[16px] border border-[var(--line)] bg-white px-4 py-3 text-sm text-[var(--ink)] outline-none transition focus:border-[var(--accent)]"
           />
         </label>
@@ -65,7 +65,7 @@ export default function SectionEditor({
           <input
             type="text"
             value={sectionForm.name || ""}
-            onChange={(e) => setSectionForm((prev) => ({ ...prev, name: e.target.value }))}
+            onChange={(e) => setSectionForm((prev: Partial<SectionDTO>) => ({ ...prev, name: e.target.value }))}
             className="w-full rounded-[16px] border border-[var(--line)] bg-white px-4 py-3 text-sm text-[var(--ink)] outline-none transition focus:border-[var(--accent)]"
           />
         </label>
@@ -74,7 +74,7 @@ export default function SectionEditor({
           <input
             type="text"
             value={sectionForm.nameKz || ""}
-            onChange={(e) => setSectionForm((prev) => ({ ...prev, nameKz: e.target.value }))}
+            onChange={(e) => setSectionForm((prev: Partial<SectionDTO>) => ({ ...prev, nameKz: e.target.value }))}
             className="w-full rounded-[16px] border border-[var(--line)] bg-white px-4 py-3 text-sm text-[var(--ink)] outline-none transition focus:border-[var(--accent)]"
           />
         </label>

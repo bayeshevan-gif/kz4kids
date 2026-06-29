@@ -1,10 +1,10 @@
 "use client";
-import React from "react";
+import React, { type Dispatch, type SetStateAction } from "react";
 import type { LevelDTO } from "@/lib/types";
 
 type Props = {
   levelForm: Partial<LevelDTO>;
-  setLevelForm: React.Dispatch<React.SetStateAction<Partial<LevelDTO>>>;
+  setLevelForm: Dispatch<SetStateAction<Partial<LevelDTO>>>;
   onSave: () => Promise<void>;
   onCancel: () => void;
   saving: boolean;
@@ -30,7 +30,7 @@ export default function LevelEditor({ levelForm, setLevelForm, onSave, onCancel,
           <input
             type="text"
             value={levelForm.name || ""}
-            onChange={(e) => setLevelForm((prev) => ({ ...prev, name: e.target.value }))}
+            onChange={(e) => setLevelForm((prev: Partial<LevelDTO>) => ({ ...prev, name: e.target.value }))}
             className="w-full rounded-[16px] border border-[var(--line)] bg-white px-4 py-3 text-sm text-[var(--ink)] outline-none transition focus:border-[var(--accent)]"
           />
         </label>
@@ -39,7 +39,7 @@ export default function LevelEditor({ levelForm, setLevelForm, onSave, onCancel,
           <input
             type="text"
             value={levelForm.nameKz || ""}
-            onChange={(e) => setLevelForm((prev) => ({ ...prev, nameKz: e.target.value }))}
+            onChange={(e) => setLevelForm((prev: Partial<LevelDTO>) => ({ ...prev, nameKz: e.target.value }))}
             className="w-full rounded-[16px] border border-[var(--line)] bg-white px-4 py-3 text-sm text-[var(--ink)] outline-none transition focus:border-[var(--accent)]"
           />
         </label>
@@ -51,7 +51,7 @@ export default function LevelEditor({ levelForm, setLevelForm, onSave, onCancel,
           <input
             type="text"
             value={levelForm.emoji || ""}
-            onChange={(e) => setLevelForm((prev) => ({ ...prev, emoji: e.target.value }))}
+            onChange={(e) => setLevelForm((prev: Partial<LevelDTO>) => ({ ...prev, emoji: e.target.value }))}
             className="w-full rounded-[16px] border border-[var(--line)] bg-white px-4 py-3 text-sm text-[var(--ink)] outline-none transition focus:border-[var(--accent)]"
           />
         </label>
@@ -61,7 +61,7 @@ export default function LevelEditor({ levelForm, setLevelForm, onSave, onCancel,
             type="number"
             min="1"
             value={levelForm.number ?? ""}
-            onChange={(e) => setLevelForm((prev) => ({ ...prev, number: Number(e.target.value) }))}
+            onChange={(e) => setLevelForm((prev: Partial<LevelDTO>) => ({ ...prev, number: Number(e.target.value) }))}
             className="w-full rounded-[16px] border border-[var(--line)] bg-white px-4 py-3 text-sm text-[var(--ink)] outline-none transition focus:border-[var(--accent)]"
           />
         </label>

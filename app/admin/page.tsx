@@ -10,6 +10,8 @@ import Sidebar from "@/components/Sidebar";
 import SectionList from "@/components/SectionList";
 import CardList from "@/components/CardList";
 import CardEditor from "@/components/CardEditor";
+import LevelEditor from "@/components/LevelEditor";
+import SectionEditor from "@/components/SectionEditor";
 
 const fetcher = (u: string) => fetch(u).then((r) => r.json());
 
@@ -45,6 +47,8 @@ export default function AdminPage() {
   const [levelForm, setLevelForm] = useState<Partial<LevelDTO>>({ emoji: "🎯", number: 1 });
   const [cardForm, setCardForm] = useState<Partial<CardDTO>>({ emoji: "🃏" });
   const [uploading, setUploading] = useState(false);
+  const [savingLevel, setSavingLevel] = useState(false);
+  const [savingSection, setSavingSection] = useState(false);
 
   const [pixabayKey, setPixabayKey] = useState(() =>
     typeof window === "undefined" ? "" : localStorage.getItem("pixabay_key") || ""
@@ -97,29 +101,33 @@ export default function AdminPage() {
     if (!sectionForm.name?.trim()) return;
     const levelId = sectionForm.levelId || activeLevel;
     if (!levelId) return;
+    setSavingSection(true);
+    try {
+      const payload: any = {
+        name: sectionForm.name.trim(),
+        nameKz: sectionForm.nameKz?.trim() || "",
+        emoji: sectionForm.emoji || "📁",
+        levelId,
+      };
 
-    const payload: any = {
-      name: sectionForm.name.trim(),
-      nameKz: sectionForm.nameKz?.trim() || "",
-      emoji: sectionForm.emoji || "📁",
-      levelId,
-    };
-
-    if (sectionForm.id) {
-      await fetch(`/api/sections/${sectionForm.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-    } else {
-      await fetch("/api/sections", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
+      if (sectionForm.id) {
+        await fetch(`/api/sections/${sectionForm.id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+      } else {
+        await fetch("/api/sections", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+      }
+      setSectionForm({ emoji: "📁" });
+      mutateSections();
+    } finally {
+      setSavingSection(false);
     }
-    setSectionForm({ emoji: "📁" });
-    mutateSections();
   }
 
   async function deleteSection(id: string) {
@@ -131,28 +139,33 @@ export default function AdminPage() {
 
   async function saveLevel() {
     if (!levelForm.name?.trim()) return;
-    const payload: any = {
-      name: levelForm.name.trim(),
-      nameKz: levelForm.nameKz?.trim() || "",
-      emoji: levelForm.emoji || "🎯",
-      number: typeof levelForm.number === "number" ? levelForm.number : 1,
-    };
+    setSavingLevel(true);
+    try {
+      const payload: any = {
+        name: levelForm.name.trim(),
+        nameKz: levelForm.nameKz?.trim() || "",
+        emoji: levelForm.emoji || "🎯",
+        number: typeof levelForm.number === "number" ? levelForm.number : 1,
+      };
 
-    if (levelForm.id) {
-      await fetch(`/api/levels/${levelForm.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-    } else {
-      await fetch("/api/levels", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
+      if (levelForm.id) {
+        await fetch(`/api/levels/${levelForm.id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+      } else {
+        await fetch("/api/levels", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+      }
+      setLevelForm({ emoji: "🎯", number: 1 });
+      mutateLevels();
+    } finally {
+      setSavingLevel(false);
     }
-    setLevelForm({ emoji: "🎯", number: 1 });
-    mutateLevels();
   }
 
   async function deleteLevel(id: string) {
@@ -260,6 +273,30 @@ export default function AdminPage() {
 
         <div className="grid gap-8 min-w-0 lg:grid-cols-[minmax(0,1.8fr)_minmax(0,0.95fr)]">
           <div className="space-y-8 min-w-0">
+            {(levelForm.name || sectionForm.name) && (
+              <div className="grid gap-8 lg:grid-cols-2">
+                {levelForm.name !== undefined && (
+                  <LevelEditor
+                    levelForm={levelForm}
+                    setLevelForm={setLevelForm}
+                    onSave={saveLevel}
+                    onCancel={() => setLevelForm({ emoji: "🎯", number: 1 })}
+                    saving={savingLevel}
+                  />
+                )}
+                {sectionForm.name !== undefined && (
+                  <SectionEditor
+                    levels={levels}
+                    sectionForm={sectionForm}
+                    setSectionForm={setSectionForm}
+                    onSave={saveSection}
+                    onCancel={() => setSectionForm({ emoji: "📁" })}
+                    saving={savingSection}
+                  />
+                )}
+              </div>
+            )}
+
             <div className="flex items-center justify-between">
               <SectionList sections={sections} activeSection={activeSection} onSelectSection={setActiveSection} />
               <button
