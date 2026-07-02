@@ -64,7 +64,7 @@ export async function GET() {
       order: level.order,
       isPublished: level.isPublished,
       createdAt: level.createdAt.toISOString(),
-      updatedAt: level.updatedAt.toISOString(),
+      updatedAt: level.updatedAt?.toISOString() ?? null,
       totalCards: allCards.length,
       learnedCards,
       totalLessons: Math.max(1, Math.ceil(allCards.length / 5)),
@@ -112,7 +112,7 @@ export async function POST(req: NextRequest) {
       order: level.order,
       isPublished: level.isPublished,
       createdAt: level.createdAt.toISOString(),
-      updatedAt: level.updatedAt.toISOString(),
+      updatedAt: level.updatedAt?.toISOString() ?? null,
     }
   });
 }

@@ -69,9 +69,9 @@ export default function HomePage() {
                     <div className="flex items-center gap-3.5 min-w-0">
                       <span className="text-[44px] flex-shrink-0">{level.emoji || "🎯"}</span>
                       <div className="min-w-0">
-                        <div className="font-extrabold text-[18px] text-[var(--ink)] truncate">{level.name}</div>
+                        <div className="font-extrabold text-[18px] text-[var(--ink)] truncate">{level.title}</div>
                         <div className="text-[13px] text-[var(--ink-soft)] font-semibold truncate">
-                          {level.nameKz}
+                          {level.description}
                         </div>
                       </div>
                     </div>

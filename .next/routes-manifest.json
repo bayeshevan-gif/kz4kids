@@ -39,6 +39,14 @@
       "namedRegex": "^/api/levels/(?<nxtPid>[^/]+?)(?:/)?$"
     },
     {
+      "page": "/api/levels/[id]/sections",
+      "regex": "^/api/levels/([^/]+?)/sections(?:/)?$",
+      "routeKeys": {
+        "nxtPid": "nxtPid"
+      },
+      "namedRegex": "^/api/levels/(?<nxtPid>[^/]+?)/sections(?:/)?$"
+    },
+    {
       "page": "/api/sections/[id]",
       "regex": "^/api/sections/([^/]+?)(?:/)?$",
       "routeKeys": {

@@ -12,6 +12,7 @@
   "/api/learning/lesson/route": "app/api/learning/lesson/route.js",
   "/api/learning/levels/route": "app/api/learning/levels/route.js",
   "/api/levels/[id]/route": "app/api/levels/[id]/route.js",
+  "/api/levels/[id]/sections/route": "app/api/levels/[id]/sections/route.js",
   "/api/levels/route": "app/api/levels/route.js",
   "/api/progress/complete-lesson/route": "app/api/progress/complete-lesson/route.js",
   "/api/progress/stats/route": "app/api/progress/stats/route.js",

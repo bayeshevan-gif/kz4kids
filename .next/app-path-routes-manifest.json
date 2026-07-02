@@ -12,6 +12,7 @@
   "/api/learning/lesson/route": "/api/learning/lesson",
   "/api/learning/levels/route": "/api/learning/levels",
   "/api/levels/[id]/route": "/api/levels/[id]",
+  "/api/levels/[id]/sections/route": "/api/levels/[id]/sections",
   "/api/levels/route": "/api/levels",
   "/api/progress/complete-lesson/route": "/api/progress/complete-lesson",
   "/api/progress/stats/route": "/api/progress/stats",

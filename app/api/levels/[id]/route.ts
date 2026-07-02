@@ -37,7 +37,7 @@ export async function PATCH(
       order: level.order,
       isPublished: level.isPublished,
       createdAt: level.createdAt.toISOString(),
-      updatedAt: level.updatedAt.toISOString(),
+      updatedAt: level.updatedAt?.toISOString() ?? null,
     }
   });
 }

@@ -6,13 +6,14 @@ export type LevelDTO = {
   order: number;
   isPublished: boolean;
   createdAt: string;
-  updatedAt: string;
+  updatedAt: string | null;
   totalCards: number;
   learnedCards: number;
   totalLessons: number;
   completedLessons: number;
   unlocked?: boolean;
   finished?: boolean;
+  sections?: SectionDTO[];
 };
 
 export type SectionDTO = {
