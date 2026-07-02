@@ -31,7 +31,11 @@
 
 1. Создай файл `.env` в корне проекта.
 2. Скопируй в него содержимое из `.env.example`.
-3. Запусти:
+3. Убедись, что `DATABASE_URL` начинается с `file:` и выглядит так:
+   ```
+   DATABASE_URL=file:./dev.db
+   ```
+4. Запусти:
    ```
    npm install
    npx prisma db push
