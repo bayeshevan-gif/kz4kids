@@ -46,7 +46,7 @@ function TestPageContent() {
   const currentLevel = levelsData?.levels.find((lvl) => lvl.id === levelId);
   const testTitle = final
     ? currentLevel
-      ? `Финальный тест уровня ${currentLevel.number}`
+      ? `Финальный тест уровня ${currentLevel.order}`
       : "Финальный тест"
     : lessonIndex > 0
     ? `Тест урока ${lessonIndex}`
@@ -139,38 +139,64 @@ function TestPageContent() {
     return (
       <>
         <AppHeader />
-        <main className="px-[18px]">
-          <h1 className="text-[26px] font-extrabold mb-1">Тесты 📝</h1>
-          <p className="text-[var(--ink-soft)] text-[15px] mb-[18px]">
-            Выбери уровень для проверки знаний или финальный тест.
+        <main className="max-w-[600px] mx-auto px-4 pb-28 animate-fade-in-up">
+          <h1 className="text-[26px] font-extrabold mt-4 mb-1">Тесты 📝</h1>
+          <p className="text-[var(--ink-soft)] text-[14px] mb-[20px] font-medium">
+            Выбери уровень или отдельный раздел для проверки знаний.
           </p>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-[14px]">
+          <div className="grid grid-cols-1 gap-[20px]">
             {levelsData?.levels.map((level) => {
               const locked = level.unlocked === false;
               const canTakeFinal = !locked && level.totalCards > 0 && level.completedLessons >= level.totalLessons;
               return (
-                <div key={level.id} className="rounded-[22px] bg-[var(--card)] card-shadow p-[18px_14px] text-left">
+                <div key={level.id} className="rounded-[24px] border-2 border-[var(--line)] bg-white p-5 shadow-sm text-left">
                   <div className="flex items-center justify-between mb-3">
                     <span className="text-[40px]">{level.emoji}</span>
-                    <span className="text-[12px] text-[var(--ink-soft)] font-semibold">Уроков {level.totalLessons}</span>
+                    <span className="text-[12px] text-[var(--ink-soft)] font-bold">Уроков {level.totalLessons}</span>
                   </div>
-                  <div className="font-extrabold text-[16px] mb-2">{level.name}</div>
-                  <div className="text-[13px] text-[var(--ink-soft)] mb-4">{level.nameKz}</div>
-                  <button
-                    disabled={locked}
-                    onClick={() => router.push(`/learn?levelId=${level.id}`)}
-                    className="w-full rounded-[18px] bg-[var(--accent)] text-white py-3 text-[15px] font-bold disabled:opacity-50 disabled:pointer-events-none active:scale-95 transition-transform"
-                  >
-                    Перейти к урокам
-                  </button>
-                  <button
-                    disabled={!level.finished && !canTakeFinal}
-                    onClick={() => router.push(`/test?levelId=${level.id}&final=1`)}
-                    className="mt-3 w-full rounded-[18px] border-2 border-[var(--line)] bg-white py-3 text-[15px] font-bold text-[var(--ink)] disabled:opacity-50 disabled:pointer-events-none active:scale-95 transition-transform"
-                  >
-                    {level.finished ? "Финальный тест" : "Финальный тест"}
-                  </button>
+                  <div className="font-extrabold text-[18px] text-[var(--ink)] mb-1">{level.title}</div>
+                  <div className="text-[13px] text-[var(--ink-soft)] mb-4 font-semibold">{level.description}</div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      disabled={locked}
+                      onClick={() => router.push(`/learn?levelId=${level.id}`)}
+                      className="w-full rounded-[16px] bg-[var(--accent-soft)] text-[var(--accent-dark)] py-3 text-[14px] font-extrabold disabled:opacity-50 disabled:pointer-events-none active:scale-95 transition"
+                    >
+                      К урокам
+                    </button>
+                    <button
+                      disabled={!level.finished && !canTakeFinal}
+                      onClick={() => router.push(`/test?levelId=${level.id}&final=1`)}
+                      className="w-full rounded-[16px] bg-[var(--accent)] text-white py-3 text-[14px] font-extrabold disabled:opacity-50 disabled:pointer-events-none active:scale-95 transition"
+                    >
+                      Финальный тест
+                    </button>
+                  </div>
+
+                  {/* Sections list test buttons */}
+                  {level.sections && level.sections.length > 0 && (
+                    <div className="mt-4 pt-4 border-t border-dashed border-[var(--line)] space-y-2">
+                      <div className="text-[11px] font-extrabold text-[var(--ink-soft)] uppercase tracking-wider">Тесты по разделам:</div>
+                      <div className="grid gap-2">
+                        {level.sections.map((sec: any) => (
+                          <button
+                            key={sec.id}
+                            disabled={locked || sec.totalCards < 2}
+                            onClick={() => router.push(`/test/${sec.id}`)}
+                            className="w-full flex items-center justify-between p-2.5 rounded-[14px] bg-gray-50 border border-[var(--line)] hover:border-[var(--accent)] hover:bg-[var(--accent-soft)] transition text-left cursor-pointer disabled:opacity-50 disabled:pointer-events-none"
+                          >
+                            <span className="text-xs font-bold text-[var(--ink)] truncate">
+                              {sec.emoji} {sec.name}
+                            </span>
+                            <span className="text-[10px] font-extrabold text-[var(--accent-dark)] bg-white border border-[var(--line)] px-2 py-0.5 rounded-full">
+                              Пройти тест 📝
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               );
             })}

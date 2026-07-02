@@ -25,7 +25,7 @@ export default function LearnSectionPage() {
 
   const section = sectionsData?.sections.find((s) => s.id === sectionId);
   const cards = cardsData?.cards ?? [];
-  const cardsPerLesson = section?.cardsPerLesson ?? 6;
+  const cardsPerLesson = 5;
   const lessons: CardDTO[][] = [];
   for (let i = 0; i < cards.length; i += cardsPerLesson) {
     lessons.push(cards.slice(i, i + cardsPerLesson));
@@ -65,7 +65,7 @@ export default function LearnSectionPage() {
   return (
     <>
       <AppHeader />
-      <main className="px-[18px]">
+      <main className="max-w-[600px] mx-auto px-4 pb-28 animate-fade-in-up">
         <div className="flex items-center gap-2.5 mb-3.5">
           <button
             onClick={() => router.push("/")}

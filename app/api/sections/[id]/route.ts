@@ -14,12 +14,27 @@ export async function PATCH(
   const name = typeof body?.name === "string" ? body.name.trim() : undefined;
   const nameKz = typeof body?.nameKz === "string" ? body.nameKz.trim() : undefined;
   const emoji = typeof body?.emoji === "string" ? body.emoji : undefined;
-  const levelId = typeof body?.levelId === "string" ? body.levelId : undefined;
+  const levelId = typeof body?.levelId === "string" || body?.levelId === null ? body.levelId : undefined;
 
   const section = await prisma.section.update({
     where: { id },
-    data: { name, nameKz, emoji, levelId },
+    data: { name, nameKz, emoji },
   });
+
+  if (levelId !== undefined) {
+    await prisma.levelSection.deleteMany({
+      where: { sectionId: id },
+    });
+    if (levelId) {
+      await prisma.levelSection.create({
+        data: {
+          levelId,
+          sectionId: id,
+          order: 0,
+        },
+      });
+    }
+  }
 
   return NextResponse.json({ section });
 }

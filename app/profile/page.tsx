@@ -44,7 +44,7 @@ export default function ProfilePage() {
   return (
     <>
       <AppHeader />
-      <main className="px-[18px] pb-6 animate-fade-in-up">
+      <main className="max-w-[600px] mx-auto px-4 pb-28 animate-fade-in-up">
         <h1 className="text-[26px] font-extrabold mb-3">Мой прогресс 🏆</h1>
         
         {/* Статистика */}

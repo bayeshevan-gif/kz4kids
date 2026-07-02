@@ -23,12 +23,20 @@ export default function CardList({ cards, onEdit, onDelete }: Props) {
               <p className="mt-1 text-sm text-[var(--ink-soft)] truncate">{card.kz}</p>
             </div>
           </div>
-          <div className="flex flex-1 flex-col gap-3 text-sm text-[var(--ink-soft)] min-w-0">
+          <div className="flex flex-1 flex-col gap-2 text-sm text-[var(--ink-soft)] min-w-0">
             {card.imageUrl ? (
-              <div className="rounded-[16px] bg-gray-50 p-4 text-sm break-words">Изображение добавлено</div>
+              <div className="text-xs text-green-600 font-bold flex items-center gap-1">🖼️ Картинка привязана</div>
             ) : (
-              <div className="rounded-[16px] bg-gray-50 p-4 text-sm break-words">Нет изображения</div>
+              <div className="text-xs text-amber-500 font-bold flex items-center gap-1">⚠️ Нет картинки</div>
             )}
+            <div className="flex flex-wrap gap-1.5 mt-1">
+              <span className={`px-2 py-0.5 rounded-md text-[10px] font-black ${card.audioRuUrl ? "bg-green-50 text-green-700 border border-green-200" : "bg-gray-50 text-gray-400"}`}>
+                🎙️ RU озвучка
+              </span>
+              <span className={`px-2 py-0.5 rounded-md text-[10px] font-black ${card.audioKzUrl ? "bg-green-50 text-green-700 border border-green-200" : "bg-gray-50 text-gray-400"}`}>
+                🎙️ KZ озвучка
+              </span>
+            </div>
           </div>
           <div className="mt-5 flex gap-2 pt-4">
             <button onClick={() => onEdit(card)} className="inline-flex items-center gap-2 rounded-[14px] border border-[var(--line)] bg-white px-3 py-2 text-sm text-[var(--ink)] transition hover:border-[var(--accent-dark)]">

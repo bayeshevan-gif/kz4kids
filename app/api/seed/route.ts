@@ -29,8 +29,8 @@ export async function GET(req: NextRequest) {
   });
 
   const levelsData = [
-    { id: "l1", name: "Уровень 1", nameKz: "1-деңгей", emoji: "1️⃣", number: 1, order: 1 },
-    { id: "l2", name: "Уровень 2", nameKz: "2-деңгей", emoji: "2️⃣", number: 2, order: 2 },
+    { id: "l1", name: "Уровень 1", nameKz: "1-деңгей", emoji: "1️⃣", order: 1 },
+    { id: "l2", name: "Уровень 2", nameKz: "2-деңгей", emoji: "2️⃣", order: 2 },
   ];
 
   for (const level of levelsData) {
@@ -39,10 +39,9 @@ export async function GET(req: NextRequest) {
       update: {},
       create: {
         id: level.id,
-        name: level.name,
-        nameKz: level.nameKz,
+        title: level.name,
+        description: level.nameKz,
         emoji: level.emoji,
-        number: level.number,
         order: level.order,
       },
     });
@@ -62,7 +61,22 @@ export async function GET(req: NextRequest) {
   for (const sec of sectionsData) {
     await prisma.section.upsert({
       where: { id: sec.id }, update: {},
-      create: { id: sec.id, levelId: sec.levelId, name: sec.name, nameKz: sec.nameKz, emoji: sec.emoji, order: sec.order },
+      create: { id: sec.id, name: sec.name, nameKz: sec.nameKz, emoji: sec.emoji, order: sec.order },
+    });
+
+    await prisma.levelSection.upsert({
+      where: {
+        levelId_sectionId: {
+          levelId: sec.levelId,
+          sectionId: sec.id,
+        },
+      },
+      update: {},
+      create: {
+        levelId: sec.levelId,
+        sectionId: sec.id,
+        order: sec.order,
+      },
     });
     for (let i = 0; i < sec.cards.length; i++) {
       const [ru, kz, emoji] = sec.cards[i];

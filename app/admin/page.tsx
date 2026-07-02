@@ -105,6 +105,7 @@ export default function AdminPage() {
         name: sectionForm.name.trim(),
         nameKz: sectionForm.nameKz?.trim() || "",
         emoji: sectionForm.emoji || "📁",
+        levelId: sectionForm.levelId || null,
       };
 
       if (sectionForm.id) {
@@ -289,23 +290,36 @@ export default function AdminPage() {
                     onSave={saveSection}
                     onCancel={() => setSectionForm({ emoji: "📁" })}
                     saving={savingSection}
+                    levels={levels}
                   />
                 )}
               </div>
             )}
 
-            <div className="flex items-center justify-between">
-              <SectionList sections={sections} activeSection={activeSection} onSelectSection={setActiveSection} />
-              <button
-                onClick={() => setShowUnboundOnly((prev) => !prev)}
-                className={`rounded-[14px] px-4 py-2 text-sm font-semibold transition ${
-                  showUnboundOnly
-                    ? "bg-orange-500 text-white"
-                    : "bg-white border border-[var(--line)] text-[var(--ink)] hover:border-[var(--accent-dark)]"
-                }`}
-              >
-                {showUnboundOnly ? "Показать все" : "⚠️ Без уровня"}
-              </button>
+            <div className="space-y-4">
+              <SectionList
+                sections={sections}
+                activeSection={activeSection}
+                onSelectSection={setActiveSection}
+                onEditSection={(section) => {
+                  setSectionForm({
+                    ...section,
+                    levelId: section.levelIds && section.levelIds.length > 0 ? section.levelIds[0] : "",
+                  });
+                }}
+              />
+              <div className="flex justify-end">
+                <button
+                  onClick={() => setShowUnboundOnly((prev) => !prev)}
+                  className={`rounded-[14px] px-4 py-2 text-sm font-semibold transition ${
+                    showUnboundOnly
+                      ? "bg-orange-500 text-white"
+                      : "bg-white border border-[var(--line)] text-[var(--ink)] hover:border-[var(--accent-dark)]"
+                  }`}
+                >
+                  {showUnboundOnly ? "Показать все" : "⚠️ Без уровня"}
+                </button>
+              </div>
             </div>
 
             <section className="rounded-[20px] border border-[var(--line)] bg-white p-5 shadow-sm min-w-0">

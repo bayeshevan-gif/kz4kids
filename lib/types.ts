@@ -24,6 +24,7 @@ export type SectionDTO = {
   totalCards: number;
   learnedCards: number;
   levelIds?: string[];
+  levelId?: string;
 };
 
 export type CardDTO = {

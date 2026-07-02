@@ -9,38 +9,24 @@ export async function GET(req: NextRequest) {
 
   const levelId = req.nextUrl.searchParams.get("levelId");
   
-  let sections;
+  let sections = await prisma.section.findMany({
+    orderBy: [{ order: "asc" }, { name: "asc" }],
+    include: {
+      levelSections: true,
+      cards: {
+        select: {
+          id: true,
+          progress: {
+            where: { userId: session!.userId },
+            select: { id: true },
+          },
+        },
+      },
+    },
+  });
+
   if (levelId) {
-    const levelSections = await prisma.levelSection.findMany({
-      where: { levelId },
-      orderBy: { order: "asc" },
-      include: {
-        section: {
-          include: {
-            cards: {
-              orderBy: { order: "asc" },
-              select: { id: true },
-            },
-          },
-        },
-      },
-    });
-    sections = levelSections.map((ls) => ls.section);
-  } else {
-    sections = await prisma.section.findMany({
-      orderBy: [{ order: "asc" }, { name: "asc" }],
-      include: {
-        cards: {
-          select: {
-            id: true,
-            progress: {
-              where: { userId: session!.userId },
-              select: { id: true },
-            },
-          },
-        },
-      },
-    });
+    sections = sections.filter((s) => s.levelSections.some((ls) => ls.levelId === levelId));
   }
 
   const result: SectionDTO[] = sections.map((s) => ({
@@ -50,7 +36,8 @@ export async function GET(req: NextRequest) {
     emoji: s.emoji,
     order: s.order,
     totalCards: s.cards.length,
-    learnedCards: s.cards.filter((c) => c.progress.length > 0).length,
+    learnedCards: s.cards.filter((c) => c.progress && c.progress.length > 0).length,
+    levelIds: s.levelSections.map((ls) => ls.levelId),
   }));
 
   return NextResponse.json({ sections: result });
@@ -64,6 +51,7 @@ export async function POST(req: NextRequest) {
   const name = typeof body?.name === "string" ? body.name.trim() : "";
   const nameKz = typeof body?.nameKz === "string" ? body.nameKz.trim() : "";
   const emoji = typeof body?.emoji === "string" ? body.emoji : "📁";
+  const levelId = typeof body?.levelId === "string" ? body.levelId : undefined;
 
   if (!name) {
     return NextResponse.json({ error: "Название раздела обязательно" }, { status: 400 });
@@ -78,6 +66,16 @@ export async function POST(req: NextRequest) {
       order: (maxOrder._max.order ?? 0) + 1,
     },
   });
+
+  if (levelId) {
+    await prisma.levelSection.create({
+      data: {
+        levelId,
+        sectionId: section.id,
+        order: 0,
+      },
+    });
+  }
 
   return NextResponse.json({ section });
 }

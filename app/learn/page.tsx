@@ -148,7 +148,7 @@ function LearnLevelContent() {
   return (
     <>
       <AppHeader />
-      <main className="px-[18px] pb-24">
+      <main className="max-w-[600px] mx-auto px-4 pb-28 animate-fade-in-up">
         <div className="flex items-center gap-2.5 mb-3.5">
           <button
             onClick={() => router.push("/")}

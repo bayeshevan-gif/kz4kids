@@ -14,14 +14,18 @@ export async function GET() {
       orderBy: { completedAt: "desc" },
     }),
     prisma.learningLevel.findMany({
-      orderBy: [{ number: "asc" }, { order: "asc" }],
+      orderBy: { order: "asc" },
       include: {
-        sections: {
+        levelSections: {
           orderBy: { order: "asc" },
           include: {
-            cards: {
-              orderBy: { order: "asc" },
-              select: { id: true },
+            section: {
+              include: {
+                cards: {
+                  orderBy: { order: "asc" },
+                  select: { id: true },
+                },
+              },
             },
           },
         },
@@ -29,7 +33,9 @@ export async function GET() {
     }),
   ]);
 
-  const allCardIds = levels.flatMap((level) => level.sections.flatMap((section) => section.cards.map((card) => card.id)));
+  const allCardIds = levels.flatMap((level) =>
+    level.levelSections.flatMap((ls) => ls.section.cards.map((card) => card.id))
+  );
   const learnedCards = await prisma.userProgress.findMany({
     where: { userId: session!.userId, cardId: { in: allCardIds } },
     select: { cardId: true },
@@ -37,17 +43,19 @@ export async function GET() {
   const learnedSet = new Set(learnedCards.map((item) => item.cardId));
 
   const levelsProgress = levels.map((level) => {
-    const cards = level.sections.flatMap((section) => section.cards.map((card) => ({ ...card, sectionId: section.id })));
+    const cards = level.levelSections.flatMap((ls) =>
+      ls.section.cards.map((card) => ({ ...card, sectionId: ls.section.id }))
+    );
     const lessons = buildLessons(cards, 5);
     const completedLessons = lessons.filter((lesson) => lesson.every((card) => learnedSet.has(card.id))).length;
     const finished = testResults.some((test) => test.levelId === level.id && test.lessonIndex === 0);
 
     return {
       id: level.id,
-      name: level.name,
-      nameKz: level.nameKz,
+      name: level.title,
+      nameKz: level.description || "",
       emoji: level.emoji,
-      number: level.number,
+      number: level.order,
       totalCards: cards.length,
       totalLessons: Math.max(1, lessons.length),
       completedLessons,
@@ -59,7 +67,7 @@ export async function GET() {
     const level = levels.find((l) => l.id === t.levelId);
     return {
       id: t.id,
-      levelName: level?.name ?? "Уровень",
+      levelName: level?.title ?? "Уровень",
       levelEmoji: level?.emoji ?? "📝",
       lessonIndex: t.lessonIndex,
       correctCount: t.correctCount,

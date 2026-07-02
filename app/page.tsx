@@ -38,10 +38,10 @@ export default function HomePage() {
   return (
     <>
       <AppHeader />
-      <main className="px-[18px]">
-        <h1 className="text-[26px] font-extrabold mt-2 mb-1">Сәлем, {user.name}! 👋</h1>
-        <p className="text-[var(--ink-soft)] text-[15px] mb-[18px]">
-          Продолжай путь обучения: выбирай уровень и начинай уроки.
+      <main className="max-w-[600px] mx-auto px-4 pb-28 animate-fade-in-up">
+        <h1 className="text-[26px] font-extrabold mt-4 mb-1">Сәлем, {user.name}! 👋</h1>
+        <p className="text-[var(--ink-soft)] text-[14px] mb-[20px] font-medium">
+          Продолжай путь обучения: выбирай уровень и начинай уроки или разделы.
         </p>
 
         {isLoading ? (
@@ -52,41 +52,97 @@ export default function HomePage() {
             Уровней пока нет
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-[14px]">
+          <div className="grid grid-cols-1 gap-[20px]">
             {levels.map((level) => {
               const completedLessons = level.completedLessons;
               const totalLessons = level.totalLessons;
               const completedArr = Array.from({ length: totalLessons }, (_, i) => i < completedLessons);
               const locked = level.unlocked === false;
               return (
-                <button
+                <div
                   key={level.id}
-                  onClick={() => !locked && router.push(`/learn?levelId=${level.id}`)}
-                  disabled={locked}
-                  className={`relative kid-section-card card-shadow active:scale-95 transition-transform text-left ${locked ? "opacity-60 cursor-not-allowed" : ""}`}
+                  className={`bg-white rounded-[24px] border-2 border-[var(--line)] p-5 shadow-sm transition-all duration-200 hover:border-[var(--accent)] hover:shadow-md ${
+                    locked ? "opacity-60" : ""
+                  }`}
                 >
-                  <span className="absolute top-3 right-3 sticker-badge">
-                    {level.learnedCards}/{level.totalCards}
-                  </span>
-                  <span className="playful-emoji">{level.emoji}</span>
-                  <div className="font-extrabold text-[16px]">{level.name}</div>
-                  <div className="text-[13px] text-[var(--ink-soft)] font-semibold mb-3">{level.nameKz}</div>
-                  <div className="text-[13px] text-[var(--ink-soft)] mb-2">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-center gap-3.5 min-w-0">
+                      <span className="text-[44px] flex-shrink-0">{level.emoji || "🎯"}</span>
+                      <div className="min-w-0">
+                        <div className="font-extrabold text-[18px] text-[var(--ink)] truncate">{level.name}</div>
+                        <div className="text-[13px] text-[var(--ink-soft)] font-semibold truncate">
+                          {level.nameKz}
+                        </div>
+                      </div>
+                    </div>
+                    <span className="sticker-badge flex-shrink-0">
+                      {level.learnedCards}/{level.totalCards}
+                    </span>
+                  </div>
+
+                  <div className="mt-3 text-[13px] text-[var(--ink-soft)] font-bold">
                     Уроков: {totalLessons}, выполнено: {completedLessons}
                   </div>
-                  <LearningPath
-                    totalLessons={totalLessons}
-                    currentLesson={Math.min(completedLessons, totalLessons - 1)}
-                    completed={completedArr}
-                    variant="horizontal"
-                  />
+
+                  <div className="mt-2.5">
+                    <LearningPath
+                      totalLessons={totalLessons}
+                      currentLesson={Math.min(completedLessons, totalLessons - 1)}
+                      completed={completedArr}
+                      variant="horizontal"
+                    />
+                  </div>
+
+                  {/* Level action */}
+                  {!locked && (
+                    <button
+                      onClick={() => router.push(`/learn?levelId=${level.id}`)}
+                      className="mt-4 w-full rounded-[16px] bg-[var(--accent)] text-white py-3.5 text-[14px] font-extrabold hover:brightness-95 active:scale-98 transition shadow-sm cursor-pointer"
+                    >
+                      🚀 Пройти уроки уровня
+                    </button>
+                  )}
+
+                  {/* Nested Sections */}
+                  {level.sections && level.sections.length > 0 && (
+                    <div className="mt-5 pt-4 border-t border-dashed border-[var(--line)] text-left space-y-2.5">
+                      <div className="text-[11px] font-extrabold text-[var(--ink-soft)] uppercase tracking-wider">
+                        Разделы уровня:
+                      </div>
+                      <div className="grid gap-2">
+                        {level.sections.map((sec: any) => (
+                          <button
+                            key={sec.id}
+                            onClick={() => router.push(`/learn/${sec.id}`)}
+                            className="w-full flex items-center justify-between p-3 rounded-[16px] bg-gray-50 border border-[var(--line)] hover:border-[var(--accent)] hover:bg-[var(--accent-soft)] transition active:scale-[0.99] text-left cursor-pointer"
+                          >
+                            <div className="flex items-center gap-2.5 min-w-0">
+                              <span className="text-xl flex-shrink-0">{sec.emoji || "📁"}</span>
+                              <div className="min-w-0">
+                                <div className="text-xs font-bold text-[var(--ink)] truncate">{sec.name}</div>
+                                <div className="text-[10px] text-[var(--ink-soft)] truncate">{sec.nameKz}</div>
+                              </div>
+                            </div>
+                            <span className="text-[10px] font-extrabold text-[var(--ink-soft)] bg-white border border-[var(--line)] px-2.5 py-1 rounded-full flex-shrink-0 ml-1">
+                              {sec.learnedCards}/{sec.totalCards}
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
                   {locked && (
-                    <div className="mt-4 text-[13px] font-bold text-[var(--ink-soft)]">Закрыто. Сначала пройди предыдущий уровень.</div>
+                    <div className="mt-4 text-[13px] font-bold text-[var(--ink-soft)] text-center">
+                      🔒 Уровень закрыт. Пройдите предыдущие уровни.
+                    </div>
                   )}
                   {level.finished && (
-                    <div className="mt-4 text-[13px] font-bold text-[var(--good)]">Уровень завершён</div>
+                    <div className="mt-4 text-[13px] font-bold text-[var(--good)] text-center">
+                      🎉 Уровень полностью пройден!
+                    </div>
                   )}
-                </button>
+                </div>
               );
             })}
           </div>

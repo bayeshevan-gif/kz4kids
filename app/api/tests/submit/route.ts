@@ -30,26 +30,37 @@ export async function POST(req: NextRequest) {
   if (sectionId) {
     const section = await prisma.section.findUnique({
       where: { id: sectionId },
-      select: { levelId: true, cards: { select: { id: true } } },
+      select: {
+        levelSections: { select: { levelId: true } },
+        cards: { select: { id: true } }
+      },
     });
     if (!section) {
       return NextResponse.json({ error: "Section not found" }, { status: 404 });
     }
-    targetLevelId = section.levelId;
+    targetLevelId = section.levelSections[0]?.levelId ?? null;
     validCardIds = new Set(section.cards.map((card) => card.id));
   } else {
     const level = await prisma.learningLevel.findUnique({
       where: { id: levelId },
       select: {
         id: true,
-        sections: { select: { cards: { select: { id: true } } } },
+        levelSections: {
+          select: {
+            section: {
+              select: {
+                cards: { select: { id: true } }
+              }
+            }
+          }
+        }
       },
     });
     if (!level) {
       return NextResponse.json({ error: "Level not found" }, { status: 404 });
     }
     targetLevelId = level.id;
-    validCardIds = new Set(level.sections.flatMap((section) => section.cards.map((card) => card.id)));
+    validCardIds = new Set(level.levelSections.flatMap((ls) => ls.section.cards.map((card) => card.id)));
   }
 
   const result = await prisma.testResult.create({

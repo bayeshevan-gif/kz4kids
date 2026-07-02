@@ -8,9 +8,10 @@ type Props = {
   onSave: () => Promise<void>;
   onCancel: () => void;
   saving: boolean;
+  levels: any[];
 };
 
-export default function SectionEditor({ sectionForm, setSectionForm, onSave, onCancel, saving }: Props) {
+export default function SectionEditor({ sectionForm, setSectionForm, onSave, onCancel, saving, levels }: Props) {
   return (
     <div className="w-full min-w-0 rounded-[20px] border border-[var(--line)] bg-white p-5 shadow-sm">
       <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
@@ -19,7 +20,7 @@ export default function SectionEditor({ sectionForm, setSectionForm, onSave, onC
             {sectionForm.id ? "Редактировать раздел" : "Создать раздел"}
           </h2>
           <p className="text-sm text-[var(--ink-soft)]">
-            Укажите название раздела. Привязка к уровням происходит через управление уровнями.
+            Укажите название раздела и привяжите его к уровню.
           </p>
         </div>
       </div>
@@ -54,6 +55,21 @@ export default function SectionEditor({ sectionForm, setSectionForm, onSave, onC
             onChange={(e) => setSectionForm((prev: Partial<SectionDTO>) => ({ ...prev, nameKz: e.target.value }))}
             className="w-full rounded-[16px] border border-[var(--line)] bg-white px-4 py-3 text-sm text-[var(--ink)] outline-none transition focus:border-[var(--accent)]"
           />
+        </label>
+        <label className="space-y-2 text-sm">
+          <span>Привязать к уровню</span>
+          <select
+            value={sectionForm.levelId || ""}
+            onChange={(e) => setSectionForm((prev: Partial<SectionDTO>) => ({ ...prev, levelId: e.target.value || "" }))}
+            className="w-full rounded-[16px] border border-[var(--line)] bg-white px-4 py-3 text-sm text-[var(--ink)] outline-none transition focus:border-[var(--accent)]"
+          >
+            <option value="">Без уровня</option>
+            {levels.map((lvl) => (
+              <option key={lvl.id} value={lvl.id}>
+                {lvl.title}
+              </option>
+            ))}
+          </select>
         </label>
       </div>
 
